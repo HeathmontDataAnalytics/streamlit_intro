@@ -5,3 +5,4 @@ export { indentWithTab } from "@codemirror/commands";
 export { python } from "@codemirror/lang-python";
 export { HighlightStyle, syntaxHighlighting, indentUnit } from "@codemirror/language";
 export { tags } from "@lezer/highlight";
+export { autocompletion, acceptCompletion } from "@codemirror/autocomplete";

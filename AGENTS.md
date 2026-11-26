@@ -12,6 +12,7 @@ index.html                     landing page: one card per exercise, reads saved 
 exercises/NN-name.html         one page per exercise: content only (see below)
 shared/engine.js               editor, stlite, run/hint/download/progress logic (ES module)
 shared/style.css               all styles, light/dark tokens
+shared/completions.js          the editor's autocomplete list and rules (see "Suggestions")
 shared/vendor/codemirror.js    prebuilt CodeMirror 6 bundle (see "Vendored CodeMirror")
 shared/vendor/codemirror.entry.js  the entry file that bundle was built from
 data/                          datasets students read (CSV and XLSX, each < 1 MB)
@@ -126,8 +127,20 @@ with a `____` left in, the engine gives a "There's still a blank" hint.
   `controller.runPython` to get the details, and shows its own hint.
 - **Stop / restart Python** unmounts (which terminates the worker) and mounts
   again without auto-running, so endless loops can't restart themselves.
-- **Storage:** one JSON value per exercise, `{view, done, code, updated}`. Every
+- **Storage:** one JSON value per exercise, `{view, done, code, updated}`, plus
+  `streamlit-beginnings:settings` for page-wide settings (`{suggestions}`). Every
   access is in try/catch; the page works without storage.
+- **Suggestions:** `shared/completions.js` holds a short, hand-picked list of
+  Streamlit, pandas, DataFrame/column and Plotly Express functions, each with a
+  signature and a one-line description. They appear only after `st.`, `pd.`,
+  `px.`, a table variable (worked out from assignments like `= pd.read_csv(` or
+  `= df[...]`) or a column (`df["x"].`). Column names from the page's
+  `datasets[].columns` appear inside quotes where a column is expected (`df["`,
+  `x="`, `groupby("` ...). Python's built-in suggestions are switched off. The top
+  suggestion is pre-selected, as in VS Code: Enter or Tab inserts it, the arrow
+  keys choose another and Esc closes the list. Students can turn suggestions off with the checkbox under the
+  editor, and the choice applies to every exercise. Keep the list short: add a
+  function only when an exercise uses it or a student is likely to want it.
 - **Testing hook:** `window.__exercise` exposes `steps`, `setCode`, `getCode`,
   `run`, `ready`, `running`, `error()`, `appText()`, `log` and `_controller()`.
 
@@ -139,7 +152,7 @@ To rebuild it (needs Node; output is committed):
 
 ```sh
 npm i codemirror@6.0.2 @codemirror/lang-python@6.2.1 @codemirror/view@6.43.15 \
-      @codemirror/state@6.7.6 @codemirror/commands@6.11.1 @codemirror/language@6.13.1 esbuild
+      @codemirror/state@6.7.6 @codemirror/commands@6.11.1 @codemirror/language@6.13.1       @codemirror/autocomplete@6.20.4 esbuild
 npx esbuild shared/vendor/codemirror.entry.js --bundle --format=esm --minify \
       --legal-comments=eof --outfile=shared/vendor/codemirror.js
 ```

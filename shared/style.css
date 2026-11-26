@@ -470,12 +470,29 @@ body.exercise { overflow: hidden; }
 }
 .editor-fallback:focus { outline: none; }
 .editor-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px 12px;
   padding: 6px 12px;
   border-top: 1px solid var(--line);
   font-size: .8rem;
   color: var(--muted);
   background: var(--bg);
 }
+.editor-foot p { margin: 0; }
+.suggest-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: .4em;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  cursor: pointer;
+}
+.suggest-toggle[hidden] { display: none; }
+.suggest-toggle input { width: 1.05em; height: 1.05em; accent-color: var(--accent); margin: 0; }
 
 /* ------------------------------------------------------------- app pane --- */
 .pane-app .pane-body { position: relative; display: flex; flex-direction: column; }

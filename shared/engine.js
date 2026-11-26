@@ -1327,9 +1327,12 @@ function didYouMean(word, options) {
 }
 
 function explainError(message, fullTrace) {
-  const m = message.match(/^([A-Za-z_.]*?(?:Error|Exception|Warning|Exit|Interrupt))\s*:?\s*([\s\S]*)$/);
+  // "SomeError: details", possibly with a module prefix such as
+  // "streamlit.errors.StreamlitDuplicateElementId: ...". Any name counts,
+  // not only ones ending in Error.
+  const m = message.match(/^([A-Za-z_][\w.]*)(?:\s*:\s*([\s\S]*))?$/);
   const type = m ? m[1].split(".").pop() : "";
-  const detail = m ? m[2].trim() : message;
+  const detail = m ? (m[2] || "").trim() : message;
   const files = bufferDatasets().map((d) => `<code>${escapeHtml(d.path)}</code>`).join(" and ");
 
   switch (type) {
@@ -1445,7 +1448,7 @@ import plotly.express as px</code></pre><p>Other packages aren't available on th
     case "StreamlitDuplicateElementKey":
       return {
         title: "Two widgets are identical",
-        html: "<p>Two widgets have the same label. Give one of them a different label, or add a unique <code>key=\"...\"</code> argument.</p>",
+        html: "<p>Two widgets of the same kind have exactly the same label and settings, so Streamlit can't tell them apart. Give one of them a different label, or give each one its own <code>key</code>, for example <code>key=\"rain\"</code> and <code>key=\"wind\"</code>.</p>",
       };
     case "StreamlitAPIException":
       return { title: "Streamlit didn't like one of its arguments", html: `<p>Streamlit said: <em>${escapeHtml(detail.split("\n")[0])}</em></p>` };

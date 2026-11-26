@@ -240,7 +240,7 @@ export const CONCEPTS = {
       ${example("A box that starts ticked:", `include_weekends = st.checkbox("Include weekends", value=True)`)}
       ${watch([
         "Store the result: <code>show_details = st.checkbox(...)</code>. On its own, <code>st.checkbox(...)</code> draws the box, but you can't use its value.",
-        "Two widgets with the same label cause an error. Give each one a different label.",
+        "Two checkboxes with exactly the same label and settings cause an error, because Streamlit can't tell them apart. Give them different labels, or give each one its own <code>key</code>: <code>st.checkbox(\"Show the details\", key=\"rain\")</code> and <code>st.checkbox(\"Show the details\", key=\"wind\")</code>.",
       ])}`,
   },
 };

@@ -214,7 +214,6 @@ details > summary:focus-visible { outline-offset: 4px; }
 .eyebrow {
   font: 600 .8rem/1 var(--font-body);
   letter-spacing: .08em;
-  text-transform: uppercase;
   color: var(--muted);
   margin-bottom: .8em;
 }

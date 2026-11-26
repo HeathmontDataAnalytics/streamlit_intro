@@ -57,17 +57,19 @@
     <li>lay out the app with a sidebar and columns</li>
   </ul>
   <div class="note">
-    <p><strong>The big idea:</strong> every time someone changes a widget, Streamlit runs your whole script again from the top. This time, the widget gives back the new value. So you write a widget like a normal variable: <code>chosen_type = st.selectbox(...)</code>.</p>
+    <p><strong>The big idea:</strong> every time someone changes a widget, Streamlit runs your whole script again from the top. Step 1 explains how this works.</p>
   </div>
 </section>
 
 <!-- ------------------------------------------------------------ step 1 -->
 <article class="step" data-title="A checkbox">
   <div class="story">
-    <p>The table is long, so let's hide it unless the user asks for it. <code>st.checkbox("label")</code> draws a checkbox and gives back <code>True</code> when it's ticked and <code>False</code> when it isn't.</p>
-    <p>An <code>if</code> statement runs the indented lines under it only when its condition is <code>True</code>:</p>
-    <pre><code>if show_data:
-    st.dataframe(df)</code></pre>
+    <p>The table is long, so let's hide it unless the user asks for it. That needs your first widget, and a way to run some code only some of the time.</p>
+  </div>
+  <div class="new-in-step" data-items="reruns st.checkbox if">
+    <div class="why" data-item="reruns"><p>Ticking the box reruns your script, and this time the checkbox gives back <code>True</code>.</p></div>
+    <div class="why" data-item="st.checkbox"><p>A box labelled <em>Show all the data</em>.</p></div>
+    <div class="why" data-item="if"><p>Show the table only when the box is ticked.</p></div>
   </div>
   <div class="task">
     <ol>
@@ -129,13 +131,16 @@ if show_data:
 <!-- ------------------------------------------------------------ step 2 -->
 <article class="step" data-title="Pick a type">
   <div class="story">
-    <p>A <strong>selectbox</strong> is a drop-down menu. You give it a label and a list of options, and it gives back the option the user picked.</p>
-    <p>To get the list of types, take the <code>type1</code> column's unique values, turn them into a list and sort it:</p>
-    <pre><code>types = sorted(df["type1"].unique().tolist())</code></pre>
+    <p>Let the user pick a Pokémon type from a drop-down menu, and show only Pokémon of that type.</p>
+  </div>
+  <div class="new-in-step" data-items="st.selectbox unique sorted" data-review="lists filtering">
+    <div class="why" data-item="st.selectbox"><p>A menu labelled <em>Choose a type</em>, with the types as its options.</p></div>
+    <div class="why" data-item="unique"><p>The different values in the <code>type1</code> column.</p></div>
+    <div class="why" data-item="sorted"><p>Put the types in alphabetical order.</p></div>
   </div>
   <div class="task">
     <ol>
-      <li>Make the sorted list of <code>types</code> as above.</li>
+      <li>Make <code>types</code>, a sorted list of the different values in the <code>type1</code> column: <code>sorted(df["type1"].unique().tolist())</code>.</li>
       <li>Add a selectbox labelled <em>Choose a type</em> with those options, and store the choice in <code>chosen_type</code>.</li>
       <li>Make <code>filtered</code>, the rows where <code>type1</code> equals <code>chosen_type</code>.</li>
       <li>Show <code>len(filtered)</code> with a label, then show <code>filtered</code> as a table.</li>
@@ -196,11 +201,13 @@ st.dataframe(filtered, hide_index=True)
 <!-- ------------------------------------------------------------ step 3 -->
 <article class="step" data-title="A slider">
   <div class="story">
-    <p>Each Pokémon's <code>total</code> is the sum of its six battle stats. A <strong>slider</strong> lets the user pick a number by dragging. You give it a label, the smallest value, the largest value and the starting value:</p>
-    <pre><code>min_total = st.slider("Minimum total stats", 0, 1200, 300)</code></pre>
-    <p>You can filter a DataFrame that's already been filtered. Each line keeps fewer rows:</p>
+    <p>Each Pokémon's <code>total</code> is the sum of its six battle stats. Let the user choose a minimum total.</p>
+    <p>You can filter a table that's already been filtered. Each line keeps fewer rows:</p>
     <pre><code>filtered = df[df["type1"] == chosen_type]
 filtered = filtered[filtered["total"] >= min_total]</code></pre>
+  </div>
+  <div class="new-in-step" data-items="st.slider" data-review="comparisons filtering">
+    <div class="why" data-item="st.slider"><p>Choose a minimum total from 0 to 1200, starting at 300.</p></div>
   </div>
   <div class="task">
     <ol>
@@ -266,9 +273,12 @@ st.dataframe(filtered, hide_index=True)
 <!-- ------------------------------------------------------------ step 4 -->
 <article class="step" data-title="Generations and legendaries">
   <div class="story">
-    <p>A <strong>multiselect</strong> lets the user pick several options. It gives back a <strong>list</strong>. <code>default=</code> sets which options start selected.</p>
-    <p><code>.isin(a_list)</code> checks whether each value is in a list, which is just what we need to filter by a multiselect:</p>
-    <pre><code>filtered = filtered[filtered["generation"].isin(chosen_generations)]</code></pre>
+    <p>Let the user choose which generations to include, and leave out legendary Pokémon if they want to.</p>
+  </div>
+  <div class="new-in-step" data-items="st.multiselect isin and-or-not" data-review="st.checkbox if">
+    <div class="why" data-item="st.multiselect"><p>Choose generations, with all of them chosen to start with.</p></div>
+    <div class="why" data-item="isin"><p>Keep the rows whose generation is in the chosen list.</p></div>
+    <div class="why" data-item="and-or-not"><p><code>if not include_legendary:</code> runs only when the box is unticked.</p></div>
   </div>
   <div class="task">
     <ol>
@@ -346,9 +356,10 @@ st.dataframe(filtered, hide_index=True)
 <!-- ------------------------------------------------------------ step 5 -->
 <article class="step" data-title="You choose the chart">
   <div class="story">
-    <p>Widgets can control charts too. Let the user choose which two stats to compare in a scatter plot. The selectbox gives back a column name, which you pass straight to Plotly as <code>x</code> or <code>y</code>.</p>
-    <p><code>index=1</code> makes a selectbox start on the second option (Python counts from 0).</p>
-    <p>An <strong>f-string</strong> puts variables into text: <code>f"{y_stat} vs {x_stat}"</code> could become <code>"defense vs attack"</code>.</p>
+    <p>Widgets can control charts too. Let the user choose which two stats to compare: each selectbox gives back a column name, which you pass straight to Plotly as <code>x</code> or <code>y</code>.</p>
+  </div>
+  <div class="new-in-step" data-items="f-strings" data-review="st.selectbox px.scatter chart-options import">
+    <div class="why" data-item="f-strings"><p>A chart title that names the chosen type and stats.</p></div>
   </div>
   <div class="task">
     <ol>
@@ -452,13 +463,15 @@ st.dataframe(filtered, hide_index=True)
 <!-- ------------------------------------------------------------ step 6 -->
 <article class="step" data-title="Tidy the layout">
   <div class="story">
-    <p>Real apps usually keep their controls in a <strong>sidebar</strong> and put headline numbers side by side in <strong>columns</strong>.</p>
-    <ul>
-      <li>Everything indented under <code>with st.sidebar:</code> goes in the sidebar.</li>
-      <li><code>col1, col2, col3 = st.columns(3)</code> makes three columns. Then <code>col1.metric(...)</code> puts a metric in the first one.</li>
-    </ul>
-    <p>Also, if the filters match nothing, a chart of nothing is confusing. <code>st.warning("...")</code> shows a message, and <code>st.stop()</code> stops the script there, so nothing below it runs.</p>
+    <p>Real apps keep their controls in a sidebar and put headline numbers side by side. And if the filters match nothing, a message is better than an empty chart.</p>
     <p class="note">The sidebar is narrow in this small app panel. Use the arrow at its top to hide it. On your own computer, your app gets the whole screen.</p>
+  </div>
+  <div class="new-in-step" data-items="st.sidebar st.columns message-boxes st.stop iloc" data-review="st.metric with">
+    <div class="why" data-item="st.sidebar"><p>Move the four filters into the sidebar.</p></div>
+    <div class="why" data-item="st.columns"><p>Three metrics side by side, then the two axis menus side by side.</p></div>
+    <div class="why" data-item="message-boxes"><p>A warning when no Pokémon match the filters.</p></div>
+    <div class="why" data-item="st.stop"><p>Stop after the warning, so no empty chart is drawn.</p></div>
+    <div class="why" data-item="iloc"><p>After sorting by total, the first row is the strongest Pokémon.</p></div>
   </div>
   <div class="task">
     <ol>

@@ -65,10 +65,12 @@
 <article class="step" data-title="Your first app">
   <div class="story">
     <p>A Streamlit app is just a Python script. Streamlit runs it from top to bottom, and every <code>st.</code> command adds something to the page.</p>
-    <p>The editor already contains a tiny app. Press <strong>Run</strong> to see it.</p>
-    <p>Lines that start with <code>#</code> are <strong>comments</strong>. Python ignores them: they're notes for people reading the code, including you next week. A good comment sits above a section of code and says what that section does, in a few plain words:</p>
-    <pre><code># A big title, then a line of text</code></pre>
-    <p>From now on, add a short comment like this above each new section you write.</p>
+    <p>The editor already contains a tiny app. Press <strong>Run</strong> to see it, then read below about each part of it.</p>
+  </div>
+  <div class="new-in-step" data-items="st.title st.write comments">
+    <div class="why" data-item="st.title"><p>Your app's name, <em>Weather explorer</em>, goes here.</p></div>
+    <div class="why" data-item="st.write"><p>A sentence under the title saying what the app is for.</p></div>
+    <div class="why" data-item="comments"><p>The starting code already has two. From now on, add one above each new section you write.</p></div>
   </div>
   <div class="task">
     <ol>
@@ -112,8 +114,16 @@ st.write("Explore a year of daily weather in four Australian cities.")
 <!-- ------------------------------------------------------------ step 2 -->
 <article class="step" data-title="Load the data">
   <div class="story">
-    <p>To work with tables of data we use <strong>pandas</strong>. By tradition it's imported with the short name <code>pd</code>. <code>pd.read_csv()</code> reads a CSV file into a <strong>DataFrame</strong>, which we'll store in a variable called <code>df</code>.</p>
+    <p>To work with tables of data we use <strong>pandas</strong>. In this step you'll load it, read the weather file into a table, and show that table on the page.</p>
     <p>When you type <code>pd.</code> or <code>st.</code>, the editor suggests functions you can use, with a short note about each. Press Enter or Tab to insert the highlighted one, use the arrow keys to choose another, or just keep typing. Esc closes the list. Later, it also suggests column names inside quotes. You can turn suggestions off under the editor.</p>
+  </div>
+  <div class="new-in-step" data-items="import variables pd.read_csv dataframes st.subheader st.dataframe">
+    <div class="why" data-item="import"><p>Add <code>import pandas as pd</code> under the Streamlit import.</p></div>
+    <div class="why" data-item="variables"><p>Store the table in a variable called <code>df</code>.</p></div>
+    <div class="why" data-item="pd.read_csv"><p>Read <code>data/weather.csv</code>.</p></div>
+    <div class="why" data-item="dataframes"><p><code>df</code> will hold the weather: one row per city per day.</p></div>
+    <div class="why" data-item="st.subheader"><p>A heading, <em>The data</em>, above the table.</p></div>
+    <div class="why" data-item="st.dataframe"><p>Show the whole weather table.</p></div>
   </div>
   <div class="task">
     <ol>
@@ -168,12 +178,13 @@ st.dataframe(df)
 <!-- ------------------------------------------------------------ step 3 -->
 <article class="step" data-title="How big is it?">
   <div class="story">
-    <p>Before using a dataset, a data scientist checks its size, its column names and its typical values. pandas makes each of these one line:</p>
-    <ul>
-      <li><code>df.shape</code> gives the number of rows and the number of columns</li>
-      <li><code>df.columns.tolist()</code> gives a list of the column names</li>
-      <li><code>df.describe()</code> gives summary statistics (count, mean, min, max…) for each number column</li>
-    </ul>
+    <p>Before using a dataset, a data scientist checks its size, its column names and its typical values. pandas makes each of these one line.</p>
+  </div>
+  <div class="new-in-step" data-items="df.shape df.columns lists df.describe" data-review="st.write">
+    <div class="why" data-item="df.shape"><p>Show how many rows and columns the weather data has.</p></div>
+    <div class="why" data-item="df.columns"><p>Show the column names, so you know exactly what each one is called.</p></div>
+    <div class="why" data-item="lists"><p><code>.tolist()</code> gives you the column names as a list.</p></div>
+    <div class="why" data-item="df.describe"><p>Summary statistics for the four number columns.</p></div>
   </div>
   <div class="task">
     <ol>
@@ -239,7 +250,12 @@ st.dataframe(df.describe())
 <!-- ------------------------------------------------------------ step 4 -->
 <article class="step" data-title="The hottest days">
   <div class="story">
-    <p>Which days were the hottest? <code>df.sort_values("max_temp", ascending=False)</code> sorts the table by <code>max_temp</code> from highest to lowest, and <code>.head(10)</code> keeps the first 10 rows. You can chain them together on one line.</p>
+    <p>Which days were the hottest? Sort the table so the hottest day comes first, then keep the top ten.</p>
+  </div>
+  <div class="new-in-step" data-items="sort_values head chaining" data-review="st.dataframe">
+    <div class="why" data-item="sort_values"><p>Sort by <code>max_temp</code>, highest first.</p></div>
+    <div class="why" data-item="head"><p>Keep the first 10 rows of the sorted table.</p></div>
+    <div class="why" data-item="chaining"><p>Sort and keep the top 10 in one line.</p></div>
   </div>
   <div class="task">
     <ol>
@@ -310,10 +326,15 @@ st.dataframe(wettest, hide_index=True)
 <!-- ------------------------------------------------------------ step 5 -->
 <article class="step" data-title="Focus on one city">
   <div class="story">
-    <p>To keep only some rows, put a <strong>condition</strong> inside square brackets:</p>
-    <pre><code>melbourne = df[df["city"] == "Melbourne"]</code></pre>
-    <p>Read it as: <em>keep the rows of <code>df</code> where the city column equals "Melbourne"</em>. Note the double equals sign <code>==</code>, which compares two values.</p>
-    <p>A column has handy methods such as <code>.mean()</code>, <code>.max()</code> and <code>.sum()</code>. <code>st.metric</code> shows a single number in large type.</p>
+    <p>Now focus on one city. Keep only Melbourne's rows, then work out two headline numbers for it.</p>
+  </div>
+  <div class="new-in-step" data-items="df[column] comparisons filtering column-maths round st.metric">
+    <div class="why" data-item="df[column]"><p><code>df["city"]</code> picks the city column, and <code>melbourne["max_temp"]</code> the temperatures.</p></div>
+    <div class="why" data-item="comparisons"><p><code>==</code> checks which rows are Melbourne's.</p></div>
+    <div class="why" data-item="filtering"><p>Keep only Melbourne's rows.</p></div>
+    <div class="why" data-item="column-maths"><p>The average maximum temperature (<code>.mean()</code>) and the total rain (<code>.sum()</code>).</p></div>
+    <div class="why" data-item="round"><p>Round the average to 1 decimal place.</p></div>
+    <div class="why" data-item="st.metric"><p>Show each number big and bold.</p></div>
   </div>
   <div class="task">
     <ol>
@@ -393,9 +414,11 @@ st.metric("Total rain (mm)", round(melbourne["rain_mm"].sum(), 1))
 <!-- ------------------------------------------------------------ step 6 -->
 <article class="step" data-title="Compare all four cities">
   <div class="story">
-    <p>Doing that once for each city would be slow. <code>groupby</code> does it for every city at once: it splits the table into one group per city and works out a value for each group.</p>
-    <pre><code>df.groupby("city")["rain_mm"].sum()</code></pre>
-    <p>Read it as: <em>group the rows by city, take the rain_mm column, and add it up for each group</em>.</p>
+    <p>Working out the same numbers for each of the four cities one at a time would be slow. pandas can do it for every city at once.</p>
+  </div>
+  <div class="new-in-step" data-items="groupby idxmax">
+    <div class="why" data-item="groupby"><p>Group the rows by <code>city</code> to get one average, or one total, for each of the four cities.</p></div>
+    <div class="why" data-item="idxmax"><p>Find which city had the most rain in total.</p></div>
   </div>
   <div class="task">
     <ol>

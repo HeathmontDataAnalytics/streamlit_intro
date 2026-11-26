@@ -66,7 +66,11 @@
 <!-- ------------------------------------------------------------ step 1 -->
 <article class="step" data-title="Read the spreadsheet">
   <div class="story">
-    <p>Reading Excel works just like reading CSV: use <code>pd.read_excel()</code> instead of <code>pd.read_csv()</code>. (On your own computer, this needs the <code>openpyxl</code> package, which is already installed on this page.)</p>
+    <p>The carnival results are in an Excel spreadsheet. Read it into a DataFrame, count the results and show them.</p>
+  </div>
+  <div class="new-in-step" data-items="pd.read_excel len" data-review="st.dataframe">
+    <div class="why" data-item="pd.read_excel"><p>Read <code>data/athletics.xlsx</code>.</p></div>
+    <div class="why" data-item="len"><p>Count the results: there's one row for each.</p></div>
   </div>
   <div class="task">
     <ol>
@@ -124,16 +128,18 @@ st.dataframe(df, hide_index=True)
 <!-- ------------------------------------------------------------ step 2 -->
 <article class="step" data-title="Your first Plotly chart">
   <div class="story">
-    <p>Which house is winning? First add up each house's points with <code>groupby</code>:</p>
-    <pre><code>house_points = df.groupby("house")["points"].sum().reset_index()</code></pre>
-    <p><code>.reset_index()</code> turns the result back into an ordinary table with two columns, <code>house</code> and <code>points</code>. That's the shape Plotly likes.</p>
-    <p><strong>Plotly Express</strong> (imported as <code>px</code>) makes a chart in one line. You say which table to use and which columns go on the x and y axes. <code>st.plotly_chart()</code> puts the chart on the page.</p>
+    <p>Which house is winning? Add up each house's points with <code>groupby</code>, as in exercise 1, then draw the totals as a bar chart.</p>
+  </div>
+  <div class="new-in-step" data-items="reset_index px.bar st.plotly_chart" data-review="groupby">
+    <div class="why" data-item="reset_index"><p>Plotly needs the house names in a column, so add <code>.reset_index()</code> to the end of your <code>groupby</code> line.</p></div>
+    <div class="why" data-item="px.bar"><p>One bar for each house, with its total points as the height.</p></div>
+    <div class="why" data-item="st.plotly_chart"><p>Shows your bar chart under the table.</p></div>
   </div>
   <div class="task">
     <ol>
       <li>Add <code>import plotly.express as px</code> to the imports at the top.</li>
       <li>Add a subheader <em>Points by house</em>.</li>
-      <li>Make <code>house_points</code> as above and show it with <code>st.dataframe</code>.</li>
+      <li>Make <code>house_points</code>: group the rows by <code>house</code>, add up the <code>points</code>, and finish with <code>.reset_index()</code>. Show it with <code>st.dataframe</code>.</li>
       <li>Make a bar chart: <code>fig = px.bar(house_points, x="house", y="points")</code>, then show it with <code>st.plotly_chart(fig)</code>.</li>
     </ol>
   </div>
@@ -190,14 +196,17 @@ st.plotly_chart(fig)
 <!-- ------------------------------------------------------------ step 3 -->
 <article class="step" data-title="Make it newsletter-ready">
   <div class="story">
-    <p>A chart for the newsletter needs a title, readable axis labels and the right colours. Plotly functions take extra <strong>keyword arguments</strong> for each of these, like <code>title="..."</code>.</p>
-    <p>Each house has a colour. A Python <strong>dictionary</strong> stores pairs like these. The house name is the <em>key</em> and its colour is the <em>value</em>:</p>
+    <p>A chart for the newsletter needs a title, readable axis labels and each house's own colour. Here are the house colours, ready to use:</p>
     <pre><code>house_colours = {
     "Gilmore": "royalblue",
     "Flynn": "gold",
     "Hollows": "seagreen",
     "Monash": "crimson",
 }</code></pre>
+  </div>
+  <div class="new-in-step" data-items="dictionaries chart-options" data-review="sort_values px.bar">
+    <div class="why" data-item="dictionaries"><p><code>house_colours</code> matches each house to its colour.</p></div>
+    <div class="why" data-item="chart-options"><p>Add <code>color</code>, <code>color_discrete_map</code>, <code>title</code>, <code>labels</code> and <code>text</code> to your bar chart.</p></div>
   </div>
   <div class="task">
     <ol>
@@ -291,13 +300,15 @@ st.plotly_chart(fig)
 <!-- ------------------------------------------------------------ step 4 -->
 <article class="step" data-title="Points by year level">
   <div class="story">
-    <p>Is Gilmore strong in every year level? You can group by <strong>two</strong> columns at once by passing a list:</p>
-    <pre><code>year_points = df.groupby(["year_level", "house"])["points"].sum().reset_index()</code></pre>
-    <p>That gives one row for each year level and house: 6 × 4 = 24 rows.</p>
+    <p>Is Gilmore strong in every year level? Add up the points for each house in each year level, then compare them in a bar chart.</p>
+  </div>
+  <div class="new-in-step" data-items="groupby-two barmode" data-review="groupby reset_index chart-options">
+    <div class="why" data-item="groupby-two"><p>Group by <code>["year_level", "house"]</code>: 6 year levels × 4 houses gives 24 rows.</p></div>
+    <div class="why" data-item="barmode"><p>Put each year level's four bars side by side.</p></div>
   </div>
   <div class="task">
     <ol>
-      <li>Add a subheader <em>Points by year level</em> and make <code>year_points</code> as above.</li>
+      <li>Add a subheader <em>Points by year level</em>. Make <code>year_points</code>: group by <code>year_level</code> and <code>house</code>, add up the <code>points</code>, and finish with <code>.reset_index()</code>.</li>
       <li>Draw a bar chart with <code>x="year_level"</code>, <code>y="points"</code> and <code>color="house"</code>. Use your <code>house_colours</code> again, and add a title and labels. Store it in a new variable, <code>fig2</code>.</li>
       <li>Add <code>barmode="group"</code> so the houses' bars sit side by side.</li>
       <li><strong>Try it:</strong> remove <code>barmode="group"</code> and run again. What changes? Which version is better for comparing houses?</li>
@@ -398,8 +409,11 @@ st.plotly_chart(fig2)
 <!-- ------------------------------------------------------------ step 5 -->
 <article class="step" data-title="Do older students run faster?">
   <div class="story">
-    <p>Points only tell part of the story. Let's look at actual times in the 100m. First keep only the 100m rows, then draw a <strong>scatter plot</strong>: one dot per runner.</p>
-    <p><code>hover_name="competitor"</code> shows the runner's name when you hover over a dot.</p>
+    <p>Points only tell part of the story. Look at the actual times in the 100m: keep only the 100m rows, then plot one dot for each runner.</p>
+  </div>
+  <div class="new-in-step" data-items="px.scatter px.box" data-review="filtering chart-options">
+    <div class="why" data-item="px.scatter"><p>One dot per 100m runner: year level across, time up, and the runner's name when you hover.</p></div>
+    <div class="why" data-item="px.box"><p>For the challenge: the spread of times in each year level.</p></div>
   </div>
   <div class="task">
     <ol>
@@ -531,12 +545,11 @@ st.plotly_chart(fig4)
 <!-- ------------------------------------------------------------ step 6 -->
 <article class="step" data-title="Organise it with tabs">
   <div class="story">
-    <p>The app is getting long. <strong>Tabs</strong> let readers pick one section at a time. <code>st.tabs</code> takes a list of tab names and gives back one tab for each:</p>
-    <pre><code>tab1, tab2 = st.tabs(["Houses", "Year levels"])
-
-with tab1:
-    st.plotly_chart(fig)</code></pre>
-    <p>Everything <strong>indented</strong> under <code>with tab1:</code> appears inside that tab. Python uses 4 spaces for each level of indentation.</p>
+    <p>The app is getting long. Tabs let readers pick one section at a time.</p>
+  </div>
+  <div class="new-in-step" data-items="st.tabs with">
+    <div class="why" data-item="st.tabs"><p>Four tabs: Houses, Year levels, 100m and Data.</p></div>
+    <div class="why" data-item="with"><p>Put each chart inside its tab.</p></div>
   </div>
   <div class="task">
     <ol>

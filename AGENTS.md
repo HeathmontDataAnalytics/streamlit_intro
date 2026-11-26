@@ -13,6 +13,7 @@ exercises/NN-name.html         one page per exercise: content only (see below)
 shared/engine.js               editor, stlite, run/hint/download/progress logic (ES module)
 shared/style.css               all styles, light/dark tokens
 shared/completions.js          the editor's autocomplete list and rules (see "Suggestions")
+shared/concepts.js             the "New in this step" cards (see "New in this step")
 shared/vendor/codemirror.js    prebuilt CodeMirror 6 bundle (see "Vendored CodeMirror")
 shared/vendor/codemirror.entry.js  the entry file that bundle was built from
 data/                          datasets students read (CSV and XLSX, each < 1 MB)
@@ -37,6 +38,9 @@ builds the three-pane workspace (steps | editor | app).
 
 <article class="step" data-title="Load the data">
   <div class="story">...</div>        <!-- context and new ideas -->
+  <div class="new-in-step" data-items="a b" data-review="c">  <!-- see "New in this step" -->
+    <div class="why" data-item="a"><p>Why it's needed in this step.</p></div>
+  </div>
   <div class="task">...</div>         <!-- shown in a "Your task" box -->
   <div class="hint">                  <!-- two levels, see "Hints" below -->
     <div class="hint-recall">...</div>  <!-- behind "Show a hint" -->
@@ -64,6 +68,33 @@ builds the three-pane workspace (steps | editor | app).
   no HTML escaping. In ordinary HTML (hints, stories), escape `<`, `>` and `&`.
 - Numbers quoted in `expect` must come from the real data. Re-check them if a
   dataset changes.
+
+### New in this step
+
+Every step explains each new function or idea before the task, so students know
+*why* they're typing it.
+
+- Each card is written once, in `shared/concepts.js`, keyed by an id: `name`,
+  `kind` (Streamlit, pandas, Plotly Express, Python, Python idea, pandas idea or
+  Streamlit idea), `at: [exercise, step]` where it's first introduced, a one-line
+  `summary` and an HTML `body`.
+- A body covers: what it does, "How to use it" (only the arguments the course uses),
+  one or two examples, and "Watch out" mistakes. Use the helpers `parts()`,
+  `example()`, `mini()` and `watch()`.
+- Examples use the shared sample data (`matches`, `totals`, `rain`, `players`,
+  `scores`), never the exercise's data, so they don't give the answer away. Every
+  example must run: the check defines those tables (and `data/rain.csv`,
+  `data/results.xlsx`) and runs each `<pre><code>` block with AppTest.
+- A step's `new-in-step` lists the ids it introduces (`data-items`) and ones it
+  reuses (`data-review`, shown as "Seen before" links). Optional `why` notes say
+  what each one does in this step. A step's `data-items` must match the cards'
+  `at`, and every card is introduced exactly once. A step with no new items shows
+  "Nothing new in this step".
+- Cards are open on a step's first visit (`seen` in storage) and collapsed after.
+  "Function reference" opens a dialog of every card introduced up to the current
+  step, grouped by exercise.
+- The story gives context only; the cards do the explaining. Don't explain a
+  function in both, and don't let tasks refer to code "above" that isn't there.
 
 ### Try it yourself
 
@@ -164,7 +195,7 @@ with a `____` left in, the engine gives a "There's still a blank" hint.
   `controller.runPython` to get the details, and shows its own hint.
 - **Stop / restart Python** unmounts (which terminates the worker) and mounts
   again without auto-running, so endless loops can't restart themselves.
-- **Storage:** one JSON value per exercise, `{view, done, code, tryCode, updated}`, plus
+- **Storage:** one JSON value per exercise, `{view, done, seen, code, tryCode, updated}`, plus
   `streamlit-beginnings:settings` for page-wide settings (`{suggestions}`). Every
   access is in try/catch; the page works without storage.
 - **Suggestions:** `shared/completions.js` holds a short, hand-picked list of

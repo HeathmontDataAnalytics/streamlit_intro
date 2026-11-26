@@ -8,6 +8,8 @@
 // This module turns that content into the three-pane workspace, runs the
 // student's code with stlite and handles hints, downloads and saved progress.
 
+import { CONCEPTS, CONCEPT_ORDER, EXERCISE_NAMES } from "./concepts.js";
+
 const STLITE_VERSION = "1.12.2";
 const STLITE_BASE = `https://cdn.jsdelivr.net/npm/@stlite/browser@${STLITE_VERSION}/build/`;
 const REQUIREMENTS = ["pandas", "plotly", "openpyxl"];
@@ -148,6 +150,19 @@ function saveSetting(name, value) {
 
 // --------------------------------------------------------------- content ---
 
+/**
+ * A step's "New in this step" list: <div class="new-in-step" data-items="a b"
+ * data-review="c">, with optional <div class="why" data-item="a"> notes saying
+ * why each one is needed in this step.
+ */
+function readNewIn(node) {
+  if (!node) return null;
+  const ids = (attr) => (node.dataset[attr] || "").split(/\s+/).filter(Boolean);
+  const why = {};
+  node.querySelectorAll(":scope > .why[data-item]").forEach((w) => { why[w.dataset.item] = w; });
+  return { items: ids("items"), review: ids("review"), why };
+}
+
 function readExercise() {
   const cfgNode = $("#exercise");
   const cfg = JSON.parse(cfgNode.textContent);
@@ -163,6 +178,7 @@ function readExercise() {
       task: part("task"),
       hint: part("hint"),
       expect: part("expect"),
+      newIn: readNewIn(part("new-in-step")),
       start: readCode(node.querySelector('script.start[type="text/x-python"]')),
       solution: readCode(node.querySelector('script.solution[type="text/x-python"]')),
     };
@@ -214,6 +230,7 @@ const allDatasets = [...cfg.datasets, ...(tryIt?.datasets || [])];
 const state = {
   view: Number.isInteger(saved.view) && saved.view >= 0 && saved.view <= LAST ? saved.view : 0,
   done: Array.isArray(saved.done) ? saved.done.filter(Number.isInteger) : [],
+  seen: Array.isArray(saved.seen) ? saved.seen.filter(Number.isInteger) : [], // steps whose cards have been shown
 };
 
 // Two separate pieces of code: the main app, and the Try it yourself app.
@@ -225,7 +242,7 @@ let activeBuffer = state.view === TRY ? "try" : "main";
 
 function persist() {
   if (editor.impl) codes[activeBuffer] = editor.getValue();
-  saved = { view: state.view, done: state.done, code: codes.main, tryCode: codes.try, updated: Date.now() };
+  saved = { view: state.view, done: state.done, seen: state.seen, code: codes.main, tryCode: codes.try, updated: Date.now() };
   store.save(saved);
 }
 
@@ -255,7 +272,10 @@ function buildLayout() {
   ui.extras = buildExtras();
   const stepsPane = el("section", { class: "pane pane-steps", "aria-label": "Instructions" },
     el("div", { class: "pane-body" },
-      el("div", { class: "steps-scroll" }, ui.stepList, ui.stepView, ui.extras)),
+      el("div", { class: "steps-scroll" },
+        el("div", { class: "steps-top" }, ui.stepList,
+          el("button", { class: "btn btn-small ref-btn", type: "button", onclick: () => openReference() }, "Function reference")),
+        ui.stepView, ui.extras)),
   );
 
   // Editor pane
@@ -416,6 +436,7 @@ function renderView() {
   const heading = el("h2", { tabindex: "-1" }, step.title);
   view.append(el("p", { class: "step-count" }, `Step ${v} of ${steps.length}`), heading);
   if (step.story) view.append(clone(step.story));
+  if (step.newIn) view.append(renderNewIn(step.newIn, v));
   if (step.task) view.append(el("div", { class: "box box-task" }, el("h3", {}, "Your task"), ...clone(step.task).childNodes, commentTask));
   if (step.hint) view.append(renderHint(step.hint));
   if (step.expect) view.append(el("div", { class: "box box-expect" }, el("h3", {}, "What you should see"), ...clone(step.expect).childNodes, commentCheck));
@@ -435,6 +456,92 @@ function renderView() {
     ),
   );
   return heading;
+}
+
+// ------------------------------------------------- new in this step ---
+
+/** One card: kind, name and summary, opening to the full explanation. */
+function conceptCard(id, { open = false, why = null } = {}) {
+  const c = CONCEPTS[id];
+  const idea = /idea/i.test(c.kind);
+  const body = el("div", { class: "concept-body", html: c.body });
+  if (why) body.prepend(el("div", { class: "concept-why" }, el("strong", {}, "In this step: "), ...clone(why).childNodes));
+  return el("details", { class: "concept", open, "data-concept": id },
+    el("summary", {},
+      el("span", { class: "concept-kind", "data-kind": c.kind }, c.kind),
+      el("span", { class: "concept-name" }, idea ? c.name : el("code", {}, c.name)),
+      el("span", { class: "concept-summary" }, c.summary),
+    ),
+    body,
+  );
+}
+
+/** The "New in this step" section. Cards are open on a step's first visit. */
+function renderNewIn(newIn, v) {
+  const first = !state.seen.includes(v);
+  if (first) state.seen.push(v);
+  const known = newIn.items.filter((id) => {
+    if (!CONCEPTS[id]) console.warn(`New in this step: no card called "${id}"`);
+    return CONCEPTS[id];
+  });
+  const box = el("section", { class: "new-in-step", "aria-labelledby": `new-${v}` },
+    el("h3", { id: `new-${v}` }, known.length ? "New in this step" : "Nothing new in this step"),
+    known.length
+      ? known.map((id) => conceptCard(id, { open: first, why: newIn.why[id] }))
+      : el("p", {}, "This step puts together things you've already used."),
+  );
+  const review = newIn.review.filter((id) => CONCEPTS[id]);
+  if (review.length) {
+    box.append(el("p", { class: "seen-before" }, "Seen before: ",
+      review.map((id, i) => [i ? ", " : "", el("button", { class: "btn-link", type: "button", onclick: () => openReference(id) },
+        /idea/i.test(CONCEPTS[id].kind) ? CONCEPTS[id].name : el("code", {}, CONCEPTS[id].name))]),
+      " (opens the Function reference)"));
+  }
+  return box;
+}
+
+/** Everything introduced up to where the student is now, by exercise. */
+function conceptsSoFar() {
+  const stepNow = state.view >= 1 && state.view <= steps.length ? state.view : state.view === 0 ? 0 : Infinity;
+  return CONCEPT_ORDER.filter((id) => {
+    const [ex, st] = CONCEPTS[id].at;
+    return ex < cfg.number || (ex === cfg.number && st <= stepNow);
+  });
+}
+
+let referenceDialog = null;
+
+/** The Function reference: a dialog of every card so far. */
+function openReference(focusId = null) {
+  if (!referenceDialog) {
+    referenceDialog = el("dialog", { class: "reference", "aria-labelledby": "reference-title" });
+    referenceDialog.addEventListener("click", (e) => { if (e.target === referenceDialog) referenceDialog.close(); });
+    document.body.append(referenceDialog);
+  }
+  const ids = conceptsSoFar();
+  const groups = {};
+  ids.forEach((id) => { (groups[CONCEPTS[id].at[0]] ||= []).push(id); });
+  referenceDialog.replaceChildren(
+    el("div", { class: "reference-head" },
+      el("h2", { id: "reference-title" }, "Function reference"),
+      el("button", { class: "btn btn-small", type: "button", onclick: () => referenceDialog.close() }, "Close"),
+    ),
+    el("div", { class: "reference-body" },
+      el("p", { class: "muted" }, "Everything introduced so far, in the order you met it. Open a card to see what it does, how to use it and examples."),
+      ids.length
+        ? Object.keys(groups).map((ex) => [
+          el("h3", {}, `Exercise ${ex}: ${EXERCISE_NAMES[ex] || ""}`),
+          groups[ex].map((id) => conceptCard(id, { open: id === focusId })),
+        ])
+        : el("p", {}, "Nothing yet. New functions and ideas are added here as you reach them in the steps."),
+    ),
+  );
+  referenceDialog.showModal();
+  if (focusId) {
+    const card = referenceDialog.querySelector(`[data-concept="${focusId}"]`);
+    card?.scrollIntoView({ block: "start" });
+    card?.querySelector("summary")?.focus();
+  }
 }
 
 /**
@@ -1222,9 +1329,12 @@ function didYouMean(word, options) {
 }
 
 function explainError(message, fullTrace) {
-  const m = message.match(/^([A-Za-z_.]*?(?:Error|Exception|Warning|Exit|Interrupt))\s*:?\s*([\s\S]*)$/);
+  // "SomeError: details", possibly with a module prefix such as
+  // "streamlit.errors.StreamlitDuplicateElementId: ...". Any name counts,
+  // not only ones ending in Error.
+  const m = message.match(/^([A-Za-z_][\w.]*)(?:\s*:\s*([\s\S]*))?$/);
   const type = m ? m[1].split(".").pop() : "";
-  const detail = m ? m[2].trim() : message;
+  const detail = m ? (m[2] || "").trim() : message;
   const files = bufferDatasets().map((d) => `<code>${escapeHtml(d.path)}</code>`).join(" and ");
 
   switch (type) {
@@ -1340,7 +1450,7 @@ import plotly.express as px</code></pre><p>Other packages aren't available on th
     case "StreamlitDuplicateElementKey":
       return {
         title: "Two widgets are identical",
-        html: "<p>Two widgets have the same label. Give one of them a different label, or add a unique <code>key=\"...\"</code> argument.</p>",
+        html: "<p>Two widgets of the same kind have exactly the same label and settings, so Streamlit can't tell them apart. Give one of them a different label, or give each one its own <code>key</code>, for example <code>key=\"rain\"</code> and <code>key=\"wind\"</code>.</p>",
       };
     case "StreamlitAPIException":
       return { title: "Streamlit didn't like one of its arguments", html: `<p>Streamlit said: <em>${escapeHtml(detail.split("\n")[0])}</em></p>` };

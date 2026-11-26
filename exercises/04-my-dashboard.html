@@ -44,9 +44,11 @@
 <!-- ------------------------------------------------------------ step 1 -->
 <article class="step" data-title="Upload a file">
   <div class="story">
-    <p><code>st.file_uploader</code> draws an upload box. Until the user has uploaded something it gives back <code>None</code>, a special value that means "nothing".</p>
-    <p>If there's no file yet, there's nothing for the rest of the app to show. Show a message, then stop the script with <code>st.stop()</code>.</p>
-    <p>pandas can read the uploaded file directly: <code>pd.read_csv(uploaded)</code>.</p>
+    <p>This dashboard starts with an upload box. Until there's a file, there's nothing to show, so show a message and stop there.</p>
+  </div>
+  <div class="new-in-step" data-items="st.file_uploader none" data-review="message-boxes st.stop if">
+    <div class="why" data-item="st.file_uploader"><p>An uploader that accepts CSV files.</p></div>
+    <div class="why" data-item="none"><p><code>if uploaded is None:</code> checks whether a file has been uploaded yet.</p></div>
   </div>
   <div class="task">
     <ol>
@@ -122,8 +124,11 @@ st.dataframe(df)
 <!-- ------------------------------------------------------------ step 2 -->
 <article class="step" data-title="Excel files and an overview">
   <div class="story">
-    <p>Let's accept Excel files too. The file's name tells you which kind it is: <code>uploaded.name.endswith(".xlsx")</code> is <code>True</code> for an Excel file. Use <code>if</code> and <code>else</code> to choose how to read it.</p>
-    <p>Then add an overview row of metrics. <code>df.isna().sum().sum()</code> counts the empty cells (missing values) in the whole table.</p>
+    <p>Let's accept Excel files too, and add an overview row of metrics.</p>
+  </div>
+  <div class="new-in-step" data-items="endswith isna" data-review="if pd.read_excel st.columns len">
+    <div class="why" data-item="endswith"><p>Check whether the file's name ends in <code>.xlsx</code>.</p></div>
+    <div class="why" data-item="isna"><p>Count the empty cells in the whole table.</p></div>
   </div>
   <div class="task">
     <ol>
@@ -202,12 +207,13 @@ st.dataframe(df)
 <!-- ------------------------------------------------------------ step 3 -->
 <article class="step" data-title="A chart for any file">
   <div class="story">
-    <p>You don't know in advance which columns the file will have, so build the chart controls from the file itself:</p>
-    <ul>
-      <li><code>df.columns.tolist()</code> lists every column, which suits the x axis.</li>
-      <li><code>df.select_dtypes("number").columns.tolist()</code> lists only the number columns, which suits the y axis.</li>
-    </ul>
-    <p>A <strong>radio</strong> widget shows a few options as buttons. To do different things for different choices, use <code>if</code>, <code>elif</code> ("else if") and <code>else</code>.</p>
+    <p>You don't know in advance which columns the file will have, so build the chart controls from the file itself.</p>
+  </div>
+  <div class="new-in-step" data-items="select_dtypes st.radio elif px.line" data-review="df.columns st.selectbox">
+    <div class="why" data-item="select_dtypes"><p>Only number columns can go on the y axis.</p></div>
+    <div class="why" data-item="st.radio"><p>Choose Scatter, Line or Bar.</p></div>
+    <div class="why" data-item="elif"><p>Draw a different kind of chart for each choice.</p></div>
+    <div class="why" data-item="px.line"><p>The chart for the Line choice.</p></div>
   </div>
   <div class="task">
     <ol>
@@ -321,6 +327,9 @@ st.plotly_chart(fig)
       <li><strong>Average</strong> the y values for each x value. For example, the average <code>max_temp</code> for each <code>month</code>.</li>
     </ul>
     <p>Averaging makes a new, smaller table with just two columns, so there's nothing left to colour by. In that case, set the colour back to <code>None</code>.</p>
+  </div>
+  <div class="new-in-step" data-items="list-joining" data-review="none and-or-not comparisons groupby chart-options">
+    <div class="why" data-item="list-joining"><p>Put <em>(none)</em> in front of the column names in the <em>Colour by</em> menu.</p></div>
   </div>
   <div class="task">
     <ol>
@@ -446,6 +455,8 @@ st.plotly_chart(fig)
   <div class="story">
     <p>Finish the dashboard by moving the chart settings into the <strong>sidebar</strong> and splitting the page into <strong>tabs</strong>: the chart, the data and a summary.</p>
     <p class="note">The sidebar is narrow in this small app panel. Use the arrow at its top to hide it. On your own computer, your app gets the whole screen.</p>
+  </div>
+  <div class="new-in-step" data-items="" data-review="st.sidebar st.tabs df.describe">
   </div>
   <div class="task">
     <ol>

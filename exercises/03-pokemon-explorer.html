@@ -23,7 +23,26 @@
       "url": "../data/pokemon.csv",
       "columns": ["number", "name", "type1", "type2", "total", "hp", "attack", "defense", "sp_attack", "sp_defense", "speed", "generation", "legendary"]
     }
-  ]
+  ],
+  "tryIt": {
+    "title": "Music chart explorer",
+    "filename": "03_try_music_chart.py",
+    "datasets": [
+      {
+        "path": "data/music.csv",
+        "url": "../data/music.csv",
+        "columns": [
+          "title",
+          "artist",
+          "genre",
+          "year",
+          "streams_millions",
+          "weeks_on_chart",
+          "australian"
+        ]
+      }
+    ]
+  }
 }
 </script>
 
@@ -563,6 +582,94 @@ if show_data:
     st.dataframe(df, hide_index=True)
   </script>
 </article>
+
+<section id="try-it">
+  <div class="story">
+    <p>Now use the same skills on new data, in a new app. <code>data/music.csv</code> is a chart of 160 songs, with each song's <code>title</code>, <code>artist</code>, <code>genre</code>, release <code>year</code>, <code>streams_millions</code>, <code>weeks_on_chart</code>, and whether the artist is <code>australian</code> (True or False). The songs and artists are made up.</p>
+    <p>This app has its own code, separate from your Pokémon explorer, and its own download. Your Pokémon app is kept safe: going back to any step brings it back.</p>
+  </div>
+  <div class="task">
+    <ol>
+      <li>Add a selectbox to choose a <code>genre</code>, and keep only that genre's songs.</li>
+      <li>Add a slider for the earliest <code>year</code> (2015 to 2025, starting at 2015), and keep only songs from that year on.</li>
+      <li>Add a checkbox <em>Only Australian artists</em> that starts unticked. When it's ticked, keep only rows where <code>australian</code> is <code>True</code>.</li>
+      <li>If no songs match, show a warning and stop. Otherwise show how many songs match, a scatter plot of <code>year</code> against <code>streams_millions</code> (showing the <code>title</code> when you hover), and the table.</li>
+    </ol>
+  </div>
+  <div class="try-hint" data-title="1. Choose a genre" data-sections="2:# The options to choose from, in order|2:# Apply the filters one at a time, keeping fewer rows">
+    <p>Use the <code>genre</code> column instead of <code>type1</code>, and give your variables new names.</p>
+  </div>
+  <div class="try-hint" data-title="2. A slider for the year" data-sections="3:# The options to choose from, in order|3:# Apply the filters one at a time, keeping fewer rows">
+    <p>The slider goes from 2015 to 2025 and starts at 2015. Compare the <code>year</code> column with <code>&gt;=</code>.</p>
+  </div>
+  <div class="try-hint" data-title="3. A checkbox" data-sections="4:# Generations to choose from, and a legendary checkbox|4:# Apply the filters one at a time, keeping fewer rows">
+    <p>This checkbox works the other way round. It starts unticked, and ticking it keeps <em>fewer</em> rows: use <code>if only_aus:</code> (or your own name) instead of <code>if not ...:</code>.</p>
+  </div>
+  <div class="try-hint" data-title="4. Stop if nothing matches, then a chart" data-sections="6:# Stop here if nothing matches, so there's no empty chart|5:# Scatter plot of the matching Pokémon">
+    <p>Use <code>year</code> and <code>streams_millions</code> for the axes and <code>title</code> for <code>hover_name</code>. You don't need <code>color</code>.</p>
+  </div>
+  <div class="expect">
+    <p><strong>Songs in the chart: 160</strong>, then your controls.</p>
+    <p>Choose <strong>Pop</strong>: <strong>19</strong> songs match. Move the slider to 2020: <strong>10</strong> match. Tick <em>Only Australian artists</em>: <strong>4</strong> match.</p>
+    <p>Choose <strong>Country</strong> with the box ticked: there are no Australian country artists, so you should see your warning instead of the chart.</p>
+  </div>
+  <script type="text/x-python" class="start">
+# Libraries this app uses
+import streamlit as st
+import pandas as pd
+import plotly.express as px
+
+# The page title
+st.title("Music chart explorer")
+
+# Load the music chart data
+df = pd.read_csv("data/music.csv")
+st.write("Songs in the chart:", len(df))
+  </script>
+  <script type="text/x-python" class="solution">
+# Libraries this app uses
+import streamlit as st
+import pandas as pd
+import plotly.express as px
+
+# The page title
+st.title("Music chart explorer")
+
+# Load the music chart data
+df = pd.read_csv("data/music.csv")
+st.write("Songs in the chart:", len(df))
+
+# The options to choose from
+genres = sorted(df["genre"].unique().tolist())
+chosen_genre = st.selectbox("Choose a genre", genres)
+earliest = st.slider("Earliest year", 2015, 2025, 2015)
+only_aus = st.checkbox("Only Australian artists")
+
+# Apply the filters one at a time, keeping fewer rows
+filtered = df[df["genre"] == chosen_genre]
+filtered = filtered[filtered["year"] >= earliest]
+if only_aus:
+    filtered = filtered[filtered["australian"] == True]
+
+# Stop here if nothing matches, so there's no empty chart
+if len(filtered) == 0:
+    st.warning("No songs match these filters. Try changing them.")
+    st.stop()
+
+# How many songs match, then a chart and the table
+st.write("Songs that match:", len(filtered))
+fig = px.scatter(
+    filtered,
+    x="year",
+    y="streams_millions",
+    hover_name="title",
+    title=f"{chosen_genre} songs: streams by year",
+    labels={"year": "Year", "streams_millions": "Streams (millions)"},
+)
+st.plotly_chart(fig)
+st.dataframe(filtered, hide_index=True)
+  </script>
+</section>
 
 <section id="finish">
   <p>You've built an interactive explorer. You used:</p>

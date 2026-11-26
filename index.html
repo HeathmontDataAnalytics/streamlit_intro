@@ -21,21 +21,21 @@
       <p class="num">Exercise 1</p>
       <h2><a href="exercises/01-weather-explorer.html">Weather explorer</a></h2>
       <p>Your first Streamlit app. Read a CSV file into a DataFrame, then explore it: its size, summary statistics, sorting and filtering.</p>
-      <div class="tags"><span class="tag">CSV</span><span class="tag">pandas</span><span class="tag">st.dataframe</span></div>
+      <div class="tags"><span class="tag">CSV</span><span class="tag">pandas</span><span class="tag">st.dataframe</span><span class="tag">+ Try it yourself</span></div>
       <p class="progress" aria-live="polite"></p>
     </li>
     <li class="card" data-exercise="02-carnival-charts" data-steps="6">
       <p class="num">Exercise 2</p>
       <h2><a href="exercises/02-carnival-charts.html">Carnival charts</a></h2>
       <p>Turn a school athletics carnival spreadsheet into bar charts, scatter plots and box plots for the newsletter.</p>
-      <div class="tags"><span class="tag">Excel</span><span class="tag">groupby</span><span class="tag">Plotly Express</span></div>
+      <div class="tags"><span class="tag">Excel</span><span class="tag">groupby</span><span class="tag">Plotly Express</span><span class="tag">+ Try it yourself</span></div>
       <p class="progress" aria-live="polite"></p>
     </li>
     <li class="card" data-exercise="03-pokemon-explorer" data-steps="6">
       <p class="num">Exercise 3</p>
       <h2><a href="exercises/03-pokemon-explorer.html">Pokémon explorer</a></h2>
       <p>Add checkboxes, drop-downs, sliders and multiselects that filter the data and drive a chart.</p>
-      <div class="tags"><span class="tag">Widgets</span><span class="tag">Filtering</span><span class="tag">Sidebar</span></div>
+      <div class="tags"><span class="tag">Widgets</span><span class="tag">Filtering</span><span class="tag">Sidebar</span><span class="tag">+ Try it yourself</span></div>
       <p class="progress" aria-live="polite"></p>
     </li>
     <li class="card" data-exercise="04-my-dashboard" data-steps="5">
@@ -74,8 +74,11 @@
       data = null;
     }
     if (!data || !out) return;
-    var done = Array.isArray(data.done) ? data.done.length : 0;
-    if (data.view > total || done >= total) {
+    // Count only the numbered steps (Try it yourself comes after them).
+    var done = Array.isArray(data.done)
+      ? data.done.filter(function (n) { return n >= 1 && n <= total; }).length
+      : 0;
+    if (done >= total) {
       out.textContent = "✓ Finished";
       out.classList.add("progress-done");
     } else if (done > 0) {

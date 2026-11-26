@@ -47,6 +47,7 @@ builds the three-pane workspace (steps | editor | app).
   <script type="text/x-python" class="solution">...</script>  <!-- required -->
 </article>
 
+<section id="try-it"> ...optional, see "Try it yourself" below... </section>
 <section id="finish"> ...recap shown after the last step... </section>
 <script type="module" src="../shared/engine.js"></script>
 ```
@@ -63,6 +64,42 @@ builds the three-pane workspace (steps | editor | app).
   no HTML escaping. In ordinary HTML (hints, stories), escape `<`, `>` and `&`.
 - Numbers quoted in `expect` must come from the real data. Re-check them if a
   dataset changes.
+
+### Try it yourself
+
+Optional. A short, separate app after the last step that uses the same skills on
+a new dataset. It needs both a config entry and a section:
+
+```json
+"tryIt": { "title": "Canteen sales", "filename": "01_try_canteen_sales.py",
+           "datasets": [ { "path": "data/canteen.csv", "url": "../data/canteen.csv",
+                           "columns": ["date", "day", ...] } ] }
+```
+
+```html
+<section id="try-it">
+  <div class="story">...</div>
+  <div class="task"><ol>...3 or 4 tasks...</ol></div>
+  <div class="try-hint" data-title="1. Load the data"
+       data-sections="2:# Load the weather data from the CSV file|3:# How big is the table, and what are its columns?">
+    <p>What to change for the new data.</p>
+  </div>
+  <div class="expect">...</div>
+  <script type="text/x-python" class="start">...</script>
+  <script type="text/x-python" class="solution">...</script>
+</section>
+```
+
+- It gets its own view ("Try it" in the step list), its own saved code
+  (`tryCode` in storage) and its own download. Moving between it and the steps
+  swaps the editor's code; the main app's code is never overwritten.
+- Each `try-hint` shows its note, then the code sections it names, taken from the
+  earlier steps' solutions. `data-sections` is a `|`-separated list of
+  `step:comment`, where the comment is a section's comment line exactly. A section
+  runs to the next top-level comment. If a solution's comment changes, update the
+  hints; the testing hook reports whether each section was found.
+- Its datasets are mounted with the exercise's. Column hints and suggestions use
+  the datasets the code actually reads.
 
 ### Hints
 
@@ -127,7 +164,7 @@ with a `____` left in, the engine gives a "There's still a blank" hint.
   `controller.runPython` to get the details, and shows its own hint.
 - **Stop / restart Python** unmounts (which terminates the worker) and mounts
   again without auto-running, so endless loops can't restart themselves.
-- **Storage:** one JSON value per exercise, `{view, done, code, updated}`, plus
+- **Storage:** one JSON value per exercise, `{view, done, code, tryCode, updated}`, plus
   `streamlit-beginnings:settings` for page-wide settings (`{suggestions}`). Every
   access is in try/catch; the page works without storage.
 - **Suggestions:** `shared/completions.js` holds a short, hand-picked list of

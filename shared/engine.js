@@ -171,27 +171,67 @@ function readExercise() {
   steps.forEach((s, i) => {
     if (!s.start) s.start = i === 0 ? "import streamlit as st\n" : steps[i - 1].solution;
   });
+  // Optional "Try it yourself": the same skills on a new dataset, as a separate
+  // app with its own code. Hints point at commented sections of earlier steps.
+  const tryNode = $("#try-it");
+  let tryIt = null;
+  if (tryNode && cfg.tryIt) {
+    const part = (cls) => tryNode.querySelector(`:scope > .${cls}`);
+    tryIt = {
+      ...cfg.tryIt,
+      story: part("story"),
+      task: part("task"),
+      expect: part("expect"),
+      hints: [...tryNode.querySelectorAll(":scope > .try-hint")].map((h) => ({
+        title: h.dataset.title || "Hint",
+        note: h,
+        sections: (h.dataset.sections || "").split("|").filter(Boolean).map((s) => {
+          const at = s.indexOf(":");
+          return { step: Number(s.slice(0, at)), comment: s.slice(at + 1).trim() };
+        }),
+      })),
+      start: readCode(tryNode.querySelector('script.start[type="text/x-python"]')),
+      solution: readCode(tryNode.querySelector('script.solution[type="text/x-python"]')),
+    };
+  }
+  tryNode?.remove();
   intro?.remove();
   finish?.remove();
   document.querySelectorAll("article.step").forEach((n) => n.remove());
-  return { cfg, intro, finish, steps };
+  return { cfg, intro, finish, steps, tryIt };
 }
 
 // ================================================================ engine ===
 
-const { cfg, intro, finish, steps } = readExercise();
+const { cfg, intro, finish, steps, tryIt } = readExercise();
 const store = makeStore(cfg.id);
 let saved = store.load();
-const LAST = steps.length + 1; // view 0 = intro, 1..n = steps, n+1 = finish
+// Views: 0 = intro, 1..n = steps, then "Try it yourself" (if any), then finish.
+const TRY = tryIt ? steps.length + 1 : -1;
+const LAST = steps.length + (tryIt ? 2 : 1);
+const allDatasets = [...cfg.datasets, ...(tryIt?.datasets || [])];
 
 const state = {
   view: Number.isInteger(saved.view) && saved.view >= 0 && saved.view <= LAST ? saved.view : 0,
   done: Array.isArray(saved.done) ? saved.done.filter(Number.isInteger) : [],
 };
 
-function persist(code) {
-  saved = { view: state.view, done: state.done, code: code ?? editor.getValue(), updated: Date.now() };
+// Two separate pieces of code: the main app, and the Try it yourself app.
+const codes = {
+  main: typeof saved.code === "string" && saved.code.trim() ? saved.code : steps[0].start,
+  try: tryIt ? (typeof saved.tryCode === "string" && saved.tryCode.trim() ? saved.tryCode : tryIt.start) : "",
+};
+let activeBuffer = state.view === TRY ? "try" : "main";
+
+function persist() {
+  if (editor.impl) codes[activeBuffer] = editor.getValue();
+  saved = { view: state.view, done: state.done, code: codes.main, tryCode: codes.try, updated: Date.now() };
   store.save(saved);
+}
+
+/** The datasets that belong to the code in the editor (main app or Try it). */
+function bufferDatasets(buffer = activeBuffer) {
+  return buffer === "try" ? tryIt.datasets : cfg.datasets;
 }
 
 // ---------------------------------------------------------------- layout ---
@@ -221,10 +261,11 @@ function buildLayout() {
   // Editor pane
   ui.runBtn = el("button", { class: "btn btn-primary", type: "button", disabled: true, title: "Run (Ctrl+Enter)", onclick: () => run() }, "▶ Run");
   ui.resetBtn = el("button", { class: "btn btn-small", type: "button", onclick: () => loadStepStart() }, "Reset to step start");
-  ui.downloadBtn = el("button", { class: "btn btn-small", type: "button", onclick: downloadCode }, "Download .py");
+  ui.downloadBtn = el("button", { class: "btn btn-small", type: "button", onclick: () => downloadCode() }, "Download .py");
   ui.editorHost = el("div", { class: "editor-host" });
+  ui.codeTitle = el("h2", {}, "Your code");
   const editorPane = el("section", { class: "pane pane-editor", "aria-label": "Code editor" },
-    el("div", { class: "pane-head" }, el("h2", {}, "Your code"), ui.runBtn, ui.resetBtn, ui.downloadBtn),
+    el("div", { class: "pane-head" }, ui.codeTitle, ui.runBtn, ui.resetBtn, ui.downloadBtn),
     el("div", { class: "pane-body" }, ui.editorHost),
     el("div", { class: "editor-foot" },
       el("p", { id: "editor-help" },
@@ -292,9 +333,9 @@ function buildExtras() {
 
 function renderStepList() {
   ui.stepList.replaceChildren();
-  const labels = ["Start", ...steps.map((_, i) => String(i + 1)), "Finish"];
+  const labels = ["Start", ...steps.map((_, i) => String(i + 1)), ...(tryIt ? ["Try it"] : []), "Finish"];
   labels.forEach((label, v) => {
-    const name = v === 0 ? "Introduction" : v === LAST ? "Finish" : `Step ${v}: ${steps[v - 1].title}`;
+    const name = v === 0 ? "Introduction" : v === LAST ? "Finish" : v === TRY ? `Try it yourself: ${tryIt.title}` : `Step ${v}: ${steps[v - 1].title}`;
     const isDone = v > 0 && v < LAST && state.done.includes(v);
     ui.stepList.append(el("li", {},
       el("button", {
@@ -332,9 +373,14 @@ function renderView() {
   if (v === LAST) {
     const heading = el("h2", { tabindex: "-1" }, "Finished!");
     view.append(el("p", { class: "step-count" }, "Finish"), heading, clone(finish));
+    const dataLinks = (list) => list.map((d) => el("a", { class: "btn", href: d.url, download: d.path.split("/").pop() }, `Download the data (${d.path.split("/").pop()})`));
     const downloads = el("div", { class: "finish-downloads" },
-      el("button", { class: "btn btn-primary", type: "button", onclick: downloadCode }, `Download your code (${cfg.filename})`),
-      cfg.datasets.map((d) => el("a", { class: "btn", href: d.url, download: d.path.split("/").pop() }, `Download the data (${d.path.split("/").pop()})`)),
+      el("button", { class: "btn btn-primary", type: "button", onclick: () => downloadCode("main") }, `Download your code (${cfg.filename})`),
+      dataLinks(cfg.datasets),
+      tryIt ? [
+        el("button", { class: "btn btn-primary", type: "button", onclick: () => downloadCode("try") }, `Download your Try it yourself code (${tryIt.filename})`),
+        dataLinks(tryIt.datasets),
+      ] : null,
     );
     const model = steps[steps.length - 1].solution;
     view.append(
@@ -360,13 +406,16 @@ function renderView() {
     return heading;
   }
 
+  // Every step asks for comments, and the self-check includes them.
+  const commentTask = el("p", { class: "comment-note" }, "Add a short ", el("code", {}, "#"), " comment above each new section of code you write.");
+  const commentCheck = el("p", { class: "comment-note" }, "Each new section of your code has a short comment above it saying what it does.");
+
+  if (v === TRY) return renderTry(view, commentTask, commentCheck);
+
   const step = steps[v - 1];
   const heading = el("h2", { tabindex: "-1" }, step.title);
   view.append(el("p", { class: "step-count" }, `Step ${v} of ${steps.length}`), heading);
   if (step.story) view.append(clone(step.story));
-  // Every step asks for comments, and the self-check includes them.
-  const commentTask = el("p", { class: "comment-note" }, "Add a short ", el("code", {}, "#"), " comment above each new section of code you write.");
-  const commentCheck = el("p", { class: "comment-note" }, "Each new section of your code has a short comment above it saying what it does.");
   if (step.task) view.append(el("div", { class: "box box-task" }, el("h3", {}, "Your task"), ...clone(step.task).childNodes, commentTask));
   if (step.hint) view.append(renderHint(step.hint));
   if (step.expect) view.append(el("div", { class: "box box-expect" }, el("h3", {}, "What you should see"), ...clone(step.expect).childNodes, commentCheck));
@@ -382,7 +431,79 @@ function renderView() {
           if (!state.done.includes(v)) state.done.push(v);
           showView(v + 1, true);
         },
-      }, v === steps.length ? "Done, finish →" : "Done, next step →"),
+      }, v < steps.length ? "Done, next step →" : tryIt ? "Done, try it yourself →" : "Done, finish →"),
+    ),
+  );
+  return heading;
+}
+
+/**
+ * The commented section of an earlier step's solution that starts with
+ * `comment`: the comment line and the code after it, up to the next section
+ * comment (a top-level # line) or the end. Blank lines inside are kept, so
+ * blocks like `with tab1:` stay with the st.tabs line above them.
+ */
+function codeSection(stepNo, comment) {
+  const lines = (steps[stepNo - 1]?.solution || "").split("\n");
+  const start = lines.findIndex((l) => l.trim() === comment);
+  if (start < 0) {
+    console.warn(`Try it yourself: no section "${comment}" in step ${stepNo}`);
+    return null;
+  }
+  const indent0 = lines[start].length - lines[start].trimStart().length;
+  let end = start + 1;
+  while (end < lines.length) {
+    const l = lines[end];
+    const isNextSection = l.trim().startsWith("#") && l.length - l.trimStart().length <= indent0 && lines[end - 1].trim() === "";
+    if (isNextSection) break;
+    end++;
+  }
+  while (end > start + 1 && lines[end - 1].trim() === "") end--;
+  const block = lines.slice(start, end);
+  const indent = Math.min(...block.filter((l) => l.trim()).map((l) => l.length - l.trimStart().length));
+  return block.map((l) => l.slice(indent)).join("\n");
+}
+
+function renderTry(view, commentTask, commentCheck) {
+  const heading = el("h2", { tabindex: "-1" }, `Try it yourself: ${tryIt.title}`);
+  view.append(el("p", { class: "step-count" }, "Try it yourself · a new app with new data"), heading);
+  if (tryIt.story) view.append(clone(tryIt.story));
+  if (tryIt.task) view.append(el("div", { class: "box box-task" }, el("h3", {}, "Your task"), ...clone(tryIt.task).childNodes, commentTask));
+  if (tryIt.hints.length) {
+    view.append(el("h3", { class: "try-hints-title" }, "Hints: code you've already written"));
+    for (const h of tryIt.hints) {
+      const details = el("details", { class: "hint" }, el("summary", {}, h.title));
+      details.append(...clone(h.note).childNodes);
+      for (const { step, comment } of h.sections) {
+        const code = codeSection(step, comment);
+        if (!code) continue;
+        details.append(
+          el("p", { class: "try-from" }, `From step ${step}, ${steps[step - 1].title}:`),
+          el("pre", {}, el("code", {}, code)),
+        );
+      }
+      view.append(details);
+    }
+  }
+  if (tryIt.expect) view.append(el("div", { class: "box box-expect" }, el("h3", {}, "What you should see"), ...clone(tryIt.expect).childNodes, commentCheck));
+  view.append(
+    el("div", { class: "step-actions" },
+      el("button", { class: "btn btn-small", type: "button", onclick: () => loadStepStart() }, "Load the starting code"),
+    ),
+    el("details", { class: "hint" },
+      el("summary", {}, "Compare with one possible answer"),
+      el("p", {}, "There is more than one right answer. If your app does what the task asked, it's correct."),
+      el("pre", {}, el("code", {}, tryIt.solution)),
+    ),
+    el("div", { class: "step-nav" },
+      el("button", { class: "btn", type: "button", onclick: () => showView(TRY - 1, true) }, "← Previous"),
+      el("button", {
+        class: "btn btn-primary", type: "button",
+        onclick: () => {
+          if (!state.done.includes(TRY)) state.done.push(TRY);
+          showView(LAST, true);
+        },
+      }, "Done, finish →"),
     ),
   );
   return heading;
@@ -411,6 +532,7 @@ function renderHint(hint) {
 
 function showView(v, focus = false) {
   state.view = Math.max(0, Math.min(LAST, v));
+  switchBuffer(state.view === TRY ? "try" : "main");
   renderStepList();
   const heading = renderView();
   persist();
@@ -422,32 +544,51 @@ function showView(v, focus = false) {
   }
 }
 
+/**
+ * Show the main app's code or the Try it yourself code in the editor. Each
+ * keeps its own text; switching runs the newly shown code.
+ */
+function switchBuffer(buffer) {
+  if (buffer === activeBuffer || !editor.impl) return;
+  codes[activeBuffer] = editor.getValue();
+  activeBuffer = buffer;
+  editor.setValue(codes[buffer]);
+  ui.codeTitle.textContent = buffer === "try" ? "Try it yourself" : "Your code";
+  clearMessages();
+  if (py.ready) run();
+}
+
 /** The code a student starts the current view from. */
 function currentStartCode() {
+  if (state.view === TRY) return { code: tryIt.start, label: "Try it yourself" };
   const idx = Math.min(Math.max(state.view, 1), steps.length) - 1;
-  return { code: steps[idx].start, stepNo: idx + 1 };
+  return { code: steps[idx].start, label: `step ${idx + 1}` };
 }
 
 function loadStepStart() {
-  const { code, stepNo } = currentStartCode();
+  const { code, label } = currentStartCode();
   const current = editor.getValue();
   if (current.trim() && current.trim() !== code.trim()) {
-    const ok = window.confirm(`Replace the code in the editor with the starting code for step ${stepNo}?\n\nYour current code will be lost. Use Download .py first if you want to keep it.`);
+    const ok = window.confirm(`Replace the code in the editor with the starting code for ${label}?\n\nYour current code will be lost. Use Download .py first if you want to keep it.`);
     if (!ok) return;
   }
   editor.setValue(code);
-  persist(code);
+  persist();
   editor.focus();
   if (py.ready) run();
 }
 
 function resetProgress() {
-  const ok = window.confirm("Reset this exercise? Your saved code and ticks for this exercise will be cleared.");
+  const ok = window.confirm("Reset this exercise? Your saved code (including Try it yourself) and ticks for this exercise will be cleared.");
   if (!ok) return;
   store.clear();
   state.view = 0;
   state.done = [];
-  editor.setValue(steps[0].start);
+  codes.main = steps[0].start;
+  codes.try = tryIt ? tryIt.start : "";
+  activeBuffer = "main";
+  editor.setValue(codes.main);
+  ui.codeTitle.textContent = "Your code";
   showView(0, true);
   if (py.ready) run();
 }
@@ -544,7 +685,7 @@ async function upgradeToCodeMirror() {
   // suggestion is pre-selected, as in VS Code: Enter or Tab inserts it and Esc
   // closes the list. A checkbox under the editor turns suggestions off.
   const suggestions = new Compartment();
-  const source = completions?.makeCompletionSource(() => cfg.datasets.flatMap((d) => d.columns || []));
+  const source = completions?.makeCompletionSource(() => activeDatasets(editor.getValue()).flatMap((d) => d.columns || []));
   const suggestionsOn = () => autocompletion({ override: [source], icons: false });
   const suggestionsOff = () => autocompletion({ override: [() => null], activateOnTyping: false });
   const wantSuggestions = () => !!source && loadSettings().suggestions !== false;
@@ -615,12 +756,20 @@ function saveBlob(text, filename, type) {
   setTimeout(() => URL.revokeObjectURL(url), 2000);
 }
 
-function downloadCode() {
+/** Download the main app's code, or the Try it yourself code ("try"). */
+function downloadCode(buffer = activeBuffer) {
+  if (editor.impl) codes[activeBuffer] = editor.getValue();
+  const isTry = buffer === "try";
+  const filename = isTry ? tryIt.filename : cfg.filename;
   const date = new Date().toLocaleDateString("en-AU", { day: "numeric", month: "long", year: "numeric" });
-  const files = cfg.datasets.map((d) => d.path);
-  const stepInfo = state.view >= 1 && state.view <= steps.length ? ` (step ${state.view} of ${steps.length})` : state.view === LAST ? " (finished)" : "";
+  const files = bufferDatasets(buffer).map((d) => d.path);
+  const stepInfo = isTry ? ""
+    : state.view >= 1 && state.view <= steps.length ? ` (step ${state.view} of ${steps.length})`
+      : state.view === LAST ? " (finished)" : "";
   const header = [
-    `# Streamlit beginnings, exercise ${cfg.number}: ${cfg.title}`,
+    isTry
+      ? `# Streamlit beginnings, exercise ${cfg.number}, Try it yourself: ${tryIt.title}`
+      : `# Streamlit beginnings, exercise ${cfg.number}: ${cfg.title}`,
     `# Downloaded on ${date}${stepInfo}`,
     "#",
     "# To run this app on your own computer:",
@@ -630,11 +779,11 @@ function downloadCode() {
       ? `#   2. Put this file in a folder. Next to it, make a folder called "data" holding ${files.map((f) => f.split("/").pop()).join(" and ")}.`
       : "#   2. Put this file in a folder.",
     `#   3. Open a terminal in that folder and run:`,
-    `#        streamlit run ${cfg.filename}`,
+    `#        streamlit run ${filename}`,
     "",
     "",
   ].join("\n");
-  saveBlob(header + editor.getValue().replace(/\s+$/, "") + "\n", cfg.filename, "text/x-python");
+  saveBlob(header + codes[buffer].replace(/\s+$/, "") + "\n", filename, "text/x-python");
 }
 
 // ================================================================ python ===
@@ -710,7 +859,7 @@ async function startPython({ autorun }) {
   ui.appHost.replaceChildren(mountPoint);
 
   const files = { "app.py": WELCOME_APP };
-  for (const d of cfg.datasets) files[d.path] = { url: new URL(d.url, location.href).href };
+  for (const d of allDatasets) files[d.path] = { url: new URL(d.url, location.href).href };
 
   try {
     py.controller = stlite.mount({
@@ -815,7 +964,7 @@ function restartPython(autorun = false) {
 async function run() {
   if (!py.ready || !py.controller) return;
   const code = editor.getValue();
-  persist(code);
+  persist();
   py.lastCode = code;
   py.runCount += 1;
   trace(`run ${py.runCount} sent`);
@@ -1044,8 +1193,17 @@ function findLine(message, traceRows) {
   return m ? Number(m[1]) : null;
 }
 
+/**
+ * The datasets the code uses (by file path), so hints and suggestions list the
+ * right columns. Falls back to the datasets for the code in the editor.
+ */
+function activeDatasets(code = py.lastCode || editor.getValue()) {
+  const used = allDatasets.filter((d) => code.includes(d.path));
+  return used.length ? used : bufferDatasets();
+}
+
 function columnsHtml() {
-  const known = cfg.datasets.filter((d) => d.columns?.length);
+  const known = activeDatasets().filter((d) => d.columns?.length);
   if (!known.length) {
     return "<p>Check the column names in the table your app shows (use <code>st.write(df.columns.tolist())</code> to list them). They must match exactly, including capital letters and underscores.</p>";
   }
@@ -1055,7 +1213,7 @@ function columnsHtml() {
 }
 
 function allColumns() {
-  return cfg.datasets.flatMap((d) => d.columns || []);
+  return activeDatasets().flatMap((d) => d.columns || []);
 }
 
 function didYouMean(word, options) {
@@ -1067,7 +1225,7 @@ function explainError(message, fullTrace) {
   const m = message.match(/^([A-Za-z_.]*?(?:Error|Exception|Warning|Exit|Interrupt))\s*:?\s*([\s\S]*)$/);
   const type = m ? m[1].split(".").pop() : "";
   const detail = m ? m[2].trim() : message;
-  const files = cfg.datasets.map((d) => `<code>${escapeHtml(d.path)}</code>`).join(" and ");
+  const files = bufferDatasets().map((d) => `<code>${escapeHtml(d.path)}</code>`).join(" and ");
 
   switch (type) {
     case "KeyError": {
@@ -1081,7 +1239,7 @@ function explainError(message, fullTrace) {
       const file = (detail.match(/'([^']+)'/) || [])[1] || "that file";
       return {
         title: "Python couldn't find the file",
-        html: `<p>There's no file called <code>${escapeHtml(file)}</code>.</p>${files ? `<p>The data file${cfg.datasets.length > 1 ? "s" : ""} on this page: ${files}. Check the spelling and that the path starts with <code>data/</code>.</p>` : ""}`,
+        html: `<p>There's no file called <code>${escapeHtml(file)}</code>.</p>${files ? `<p>The data file${bufferDatasets().length > 1 ? "s" : ""} for this app: ${files}. Check the spelling and that the path starts with <code>data/</code>.</p>` : ""}`,
       };
     }
     case "NameError": {
@@ -1197,7 +1355,8 @@ import plotly.express as px</code></pre><p>Other packages aren't available on th
 // ================================================================== boot ===
 
 buildLayout();
-editor.impl = makeTextarea(typeof saved.code === "string" && saved.code.trim() ? saved.code : steps[0].start);
+editor.impl = makeTextarea(codes[activeBuffer]);
+if (activeBuffer === "try") ui.codeTitle.textContent = "Try it yourself";
 showView(state.view);
 startPython({ autorun: true }); // start downloading Python straight away
 upgradeToCodeMirror();
@@ -1213,6 +1372,9 @@ window.__exercise = {
   get running() { return py.running; },
   error: () => ui.messages.querySelector('[data-kind="err"]')?.textContent || null,
   appText: () => ui.appHost.innerText,
+  tryIt: tryIt ? { start: tryIt.start, solution: tryIt.solution, hints: tryIt.hints.map((h) => h.sections.map((x) => !!codeSection(x.step, x.comment))) } : null,
+  showView: (v) => showView(v),
+  TRY,
   log: eventLog,
   _controller: () => py.controller,
 };

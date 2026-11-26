@@ -23,7 +23,26 @@
       "url": "../data/weather.csv",
       "columns": ["date", "city", "month", "max_temp", "min_temp", "rain_mm", "sunshine_hours"]
     }
-  ]
+  ],
+  "tryIt": {
+    "title": "Canteen sales",
+    "filename": "01_try_canteen_sales.py",
+    "datasets": [
+      {
+        "path": "data/canteen.csv",
+        "url": "../data/canteen.csv",
+        "columns": [
+          "date",
+          "day",
+          "item",
+          "category",
+          "price",
+          "quantity",
+          "revenue"
+        ]
+      }
+    ]
+  }
 }
 </script>
 
@@ -464,6 +483,84 @@ total_rain = df.groupby("city")["rain_mm"].sum()
 st.write("The wettest city was", total_rain.idxmax())
   </script>
 </article>
+
+<section id="try-it">
+  <div class="story">
+    <p>Time to use the same skills on new data, in a new app. The school canteen has given you a term of sales: <code>data/canteen.csv</code> has one row for each item on each school day (450 rows), with the <code>date</code>, <code>day</code>, <code>item</code>, <code>category</code>, <code>price</code>, <code>quantity</code> sold and <code>revenue</code> (money taken). The data is simulated.</p>
+    <p>This app has its own code, separate from your weather explorer, and its own download. Your weather app is kept safe: going back to any step brings it back.</p>
+  </div>
+  <div class="task">
+    <ol>
+      <li>Read <code>data/canteen.csv</code> into <code>df</code>, show it, and show how many rows and columns it has.</li>
+      <li>Show the 10 biggest sales: the rows with the highest <code>quantity</code>.</li>
+      <li>Pick one item, such as <em>Sausage roll</em>. Show the total number sold and the average sold per day as metrics.</li>
+      <li>Show the total <code>revenue</code> for each item as a table, then say which item earned the most.</li>
+    </ol>
+  </div>
+  <div class="try-hint" data-title="1. Load the data and check its size" data-sections="2:# Load the weather data from the CSV file|3:# How big is the table, and what are its columns?">
+    <p>Change the file name. Everything else works the same way.</p>
+  </div>
+  <div class="try-hint" data-title="2. The 10 biggest sales" data-sections="4:# The 10 hottest days: sort highest first, keep 10">
+    <p>Sort by <code>quantity</code> instead of <code>max_temp</code>, and give your table a new name and subheader.</p>
+  </div>
+  <div class="try-hint" data-title="3. One item" data-sections="5:# Keep only Melbourne's rows and summarise them">
+    <p>Filter the <code>item</code> column, then use the <code>quantity</code> column. A total is <code>.sum()</code>; an average is <code>.mean()</code>.</p>
+  </div>
+  <div class="try-hint" data-title="4. Revenue for each item" data-sections="6:# Total rain for each city, then the wettest one">
+    <p>Group by <code>item</code> and add up <code>revenue</code>. Show the result with <code>st.dataframe</code> before you find the biggest.</p>
+  </div>
+  <div class="expect">
+    <p><strong>Rows: 450</strong> and <strong>Columns: 7</strong>.</p>
+    <p>The biggest sale is 66 sausage rolls on Friday 21 March. Most of the top 10 are on Fridays.</p>
+    <p>Sausage rolls: <strong>1735</strong> sold in total, an average of <strong>38.6</strong> a day.</p>
+    <p>The item that earned the most was the <strong>Sausage roll</strong> ($6,940).</p>
+  </div>
+  <script type="text/x-python" class="start">
+# Libraries this app uses
+import streamlit as st
+import pandas as pd
+
+# A big title, then a line of text
+st.title("Canteen sales")
+st.write("Explore a term of sales at the school canteen.")
+  </script>
+  <script type="text/x-python" class="solution">
+# Libraries this app uses
+import streamlit as st
+import pandas as pd
+
+# A big title, then a line of text
+st.title("Canteen sales")
+st.write("Explore a term of sales at the school canteen.")
+
+# Load the canteen sales from the CSV file
+df = pd.read_csv("data/canteen.csv")
+
+# Show the whole table and its size
+st.subheader("The data")
+st.dataframe(df)
+rows, columns = df.shape
+st.write("Rows:", rows)
+st.write("Columns:", columns)
+
+# The 10 biggest sales: sort highest first, keep 10
+biggest = df.sort_values("quantity", ascending=False).head(10)
+st.subheader("The 10 biggest sales")
+st.dataframe(biggest, hide_index=True)
+
+# Keep only sausage rolls and summarise them
+rolls = df[df["item"] == "Sausage roll"]
+st.subheader("Sausage rolls")
+st.metric("Total sold", rolls["quantity"].sum())
+st.metric("Average sold per day", round(rolls["quantity"].mean(), 1))
+
+# Total revenue for each item, then the top earner
+st.subheader("Revenue by item")
+revenue = df.groupby("item")["revenue"].sum().round(2)
+st.dataframe(revenue)
+st.write("The item that earned the most was", revenue.idxmax())
+  </script>
+</section>
 
 <section id="finish">
   <p>You've built a Streamlit app that loads a CSV file and answers questions about it. Along the way you used:</p>

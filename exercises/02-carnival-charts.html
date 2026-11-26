@@ -23,7 +23,27 @@
       "url": "../data/athletics.xlsx",
       "columns": ["event", "event_type", "year_level", "competitor", "house", "result", "unit", "place", "points"]
     }
-  ]
+  ],
+  "tryIt": {
+    "title": "Student survey",
+    "filename": "02_try_student_survey.py",
+    "datasets": [
+      {
+        "path": "data/survey.xlsx",
+        "url": "../data/survey.xlsx",
+        "columns": [
+          "student",
+          "year_level",
+          "travel_mode",
+          "sleep_hours",
+          "screen_time_hours",
+          "sport_hours",
+          "favourite_subject",
+          "happiness"
+        ]
+      }
+    ]
+  }
 }
 </script>
 
@@ -640,6 +660,93 @@ with tab4:
     st.dataframe(df, hide_index=True)
   </script>
 </article>
+
+<section id="try-it">
+  <div class="story">
+    <p>Now use the same skills on new data, in a new app. The student council ran a wellbeing survey. <code>data/survey.xlsx</code> has one row for each of the 240 students who answered, with their <code>year_level</code>, how they travel to school (<code>travel_mode</code>), their <code>sleep_hours</code> and <code>screen_time_hours</code> on a school night, <code>sport_hours</code> a week, <code>favourite_subject</code> and a <code>happiness</code> score out of 10. The answers are simulated.</p>
+    <p>This app has its own code, separate from your carnival charts, and its own download. Your carnival app is kept safe: going back to any step brings it back.</p>
+  </div>
+  <div class="task">
+    <ol>
+      <li>Read <code>data/survey.xlsx</code> into <code>df</code> and show how many students answered.</li>
+      <li>Make a bar chart of the <strong>average</strong> <code>sleep_hours</code> for each <code>year_level</code>, with a title and tidy axis labels.</li>
+      <li>Make a scatter plot with one dot per student: <code>screen_time_hours</code> across, <code>sleep_hours</code> up, coloured by <code>year_level</code>, showing the <code>student</code> code when you hover.</li>
+      <li>Put the two charts and the data in three tabs.</li>
+    </ol>
+  </div>
+  <div class="try-hint" data-title="1. Read the spreadsheet" data-sections="1:# Load the carnival results from the Excel file">
+    <p>Change the file name. This time you don't need to show the whole table yet: it goes in a tab at the end.</p>
+  </div>
+  <div class="try-hint" data-title="2. A bar chart of averages" data-sections="2:# Add up the points for each house|3:# Bar chart of total points, one bar per house">
+    <p>Group by <code>year_level</code> and use <code>.mean()</code> instead of <code>.sum()</code>, because you want the average. You don't need the house colours.</p>
+  </div>
+  <div class="try-hint" data-title="3. A scatter plot" data-sections="5:# One dot per runner; hover to see their name">
+    <p>Use the whole table (<code>df</code>), not a filtered one. Change the columns for <code>x</code>, <code>y</code>, <code>color</code> and <code>hover_name</code>, and the labels.</p>
+  </div>
+  <div class="try-hint" data-title="4. Tabs" data-sections="6:# One tab for each chart, and one for the data">
+    <p>You need three tabs this time, not four.</p>
+  </div>
+  <div class="expect">
+    <p><strong>Students who answered: 240</strong>, then three tabs.</p>
+    <p>The bar chart shows sleep falling as students get older: about <strong>9.3</strong> hours in Year 7 down to about <strong>7.5</strong> in Year 12.</p>
+    <p>In the scatter plot, the dots slope downwards: students with more screen time tend to sleep less. Older students (one end of the colour scale) sit lower and further right.</p>
+  </div>
+  <script type="text/x-python" class="start">
+# Libraries this app uses
+import streamlit as st
+import pandas as pd
+import plotly.express as px
+
+# The page title
+st.title("Student survey")
+  </script>
+  <script type="text/x-python" class="solution">
+# Libraries this app uses
+import streamlit as st
+import pandas as pd
+import plotly.express as px
+
+# The page title
+st.title("Student survey")
+
+# Load the survey answers from the Excel file
+df = pd.read_excel("data/survey.xlsx")
+st.write("Students who answered:", len(df))
+
+# Average hours of sleep for each year level
+sleep = df.groupby("year_level")["sleep_hours"].mean().reset_index()
+fig = px.bar(
+    sleep,
+    x="year_level",
+    y="sleep_hours",
+    title="Average sleep by year level",
+    labels={"year_level": "Year level", "sleep_hours": "Hours of sleep"},
+)
+
+# One dot per student: screen time against sleep
+fig2 = px.scatter(
+    df,
+    x="screen_time_hours",
+    y="sleep_hours",
+    color="year_level",
+    hover_name="student",
+    title="Screen time and sleep",
+    labels={"screen_time_hours": "Screen time (hours)", "sleep_hours": "Hours of sleep", "year_level": "Year level"},
+)
+
+# One tab for each chart, and one for the data
+tab1, tab2, tab3 = st.tabs(["Sleep", "Screen time", "Data"])
+
+with tab1:
+    st.plotly_chart(fig)
+
+with tab2:
+    st.plotly_chart(fig2)
+
+with tab3:
+    st.dataframe(df, hide_index=True)
+  </script>
+</section>
 
 <section id="finish">
   <p>Your app turns a spreadsheet into charts for the newsletter. You used:</p>

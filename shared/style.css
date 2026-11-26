@@ -400,6 +400,13 @@ body.exercise { overflow: hidden; }
   margin-bottom: .6em;
 }
 .box-task { border-left: 4px solid var(--accent); }
+.box .comment-note {
+  border-top: 1px dashed var(--line);
+  padding-top: .6em;
+  margin-top: .6em;
+  color: var(--muted);
+  font-size: .92rem;
+}
 .box-expect { border-left: 4px solid var(--ok); }
 .hint {
   border: 1px dashed var(--muted);

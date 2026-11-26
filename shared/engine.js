@@ -336,9 +336,12 @@ function renderView() {
   const heading = el("h2", { tabindex: "-1" }, step.title);
   view.append(el("p", { class: "step-count" }, `Step ${v} of ${steps.length}`), heading);
   if (step.story) view.append(clone(step.story));
-  if (step.task) view.append(el("div", { class: "box box-task" }, el("h3", {}, "Your task"), ...clone(step.task).childNodes));
+  // Every step asks for comments, and the self-check includes them.
+  const commentTask = el("p", { class: "comment-note" }, "Add a short ", el("code", {}, "#"), " comment above each new section of code you write.");
+  const commentCheck = el("p", { class: "comment-note" }, "Each new section of your code has a short comment above it saying what it does.");
+  if (step.task) view.append(el("div", { class: "box box-task" }, el("h3", {}, "Your task"), ...clone(step.task).childNodes, commentTask));
   if (step.hint) view.append(el("details", { class: "hint" }, el("summary", {}, "Show a hint"), ...clone(step.hint).childNodes));
-  if (step.expect) view.append(el("div", { class: "box box-expect" }, el("h3", {}, "What you should see"), ...clone(step.expect).childNodes));
+  if (step.expect) view.append(el("div", { class: "box box-expect" }, el("h3", {}, "What you should see"), ...clone(step.expect).childNodes, commentCheck));
   view.append(
     el("div", { class: "step-actions" },
       el("button", { class: "btn btn-small", type: "button", onclick: () => loadStepStart() }, "Load the starting code for this step"),

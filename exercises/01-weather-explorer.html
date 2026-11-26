@@ -47,30 +47,39 @@
   <div class="story">
     <p>A Streamlit app is just a Python script. Streamlit runs it from top to bottom, and every <code>st.</code> command adds something to the page.</p>
     <p>The editor already contains a tiny app. Press <strong>Run</strong> to see it.</p>
+    <p>Lines that start with <code>#</code> are <strong>comments</strong>. Python ignores them: they're notes for people reading the code, including you next week. A good comment sits above a section of code and says what that section does, in a few plain words:</p>
+    <pre><code># A big title, then a line of text</code></pre>
+    <p>From now on, add a short comment like this above each new section you write.</p>
   </div>
   <div class="task">
     <ol>
       <li>Change the title to <strong>Weather explorer</strong>.</li>
       <li>Change the <code>st.write</code> line so it says what the app is for, for example <em>Explore a year of daily weather in four Australian cities.</em></li>
       <li>Press <strong>Run</strong> to see the change.</li>
+      <li>Read the two comments in the code. Do they still describe what the code does?</li>
     </ol>
   </div>
   <div class="hint">
     <p>Text in Python goes inside quotes. Only change the words inside the quotes:</p>
-    <pre><code>st.title("Weather explorer")</code></pre>
+    <pre><code># A big title, then a line of text
+st.title("Weather explorer")</code></pre>
   </div>
   <div class="expect">
     <p>A large heading <strong>Weather explorer</strong> with your sentence underneath.</p>
   </div>
   <script type="text/x-python" class="start">
+# Libraries this app uses
 import streamlit as st
 
+# A big title, then a line of text
 st.title("My first app")
 st.write("Hello!")
   </script>
   <script type="text/x-python" class="solution">
+# Libraries this app uses
 import streamlit as st
 
+# A big title, then a line of text
 st.title("Weather explorer")
 st.write("Explore a year of daily weather in four Australian cities.")
   </script>
@@ -90,8 +99,10 @@ st.write("Explore a year of daily weather in four Australian cities.")
   </div>
   <div class="hint">
     <p>Your code should end like this:</p>
-    <pre><code>df = pd.read_csv("data/weather.csv")
+    <pre><code># Load the weather data from the CSV file
+df = pd.read_csv("data/weather.csv")
 
+# Show the whole table
 st.subheader("The data")
 st.dataframe(df)</code></pre>
     <p>The file path is in quotes, and the folder name <code>data/</code> is part of it.</p>
@@ -101,14 +112,18 @@ st.dataframe(df)</code></pre>
     <p>Try it out: click a column heading to sort by that column, and scroll down to see more rows.</p>
   </div>
   <script type="text/x-python" class="solution">
+# Libraries this app uses
 import streamlit as st
 import pandas as pd
 
+# A big title, then a line of text
 st.title("Weather explorer")
 st.write("Explore a year of daily weather in four Australian cities.")
 
+# Load the weather data from the CSV file
 df = pd.read_csv("data/weather.csv")
 
+# Show the whole table
 st.subheader("The data")
 st.dataframe(df)
   </script>
@@ -134,7 +149,8 @@ st.dataframe(df)
   </div>
   <div class="hint">
     <p><code>st.write</code> can take several things separated by commas and shows them side by side.</p>
-    <pre><code>rows, columns = df.shape
+    <pre><code># How big is the table, and what are its columns?
+rows, columns = df.shape
 st.write("Rows:", rows)
 st.write("Columns:", columns)</code></pre>
     <p>For the summary: <code>st.dataframe(df.describe())</code></p>
@@ -144,22 +160,28 @@ st.write("Columns:", columns)</code></pre>
     <p>Check yourself: use the summary table to find the highest maximum temperature in the dataset. (It's 38 °C.)</p>
   </div>
   <script type="text/x-python" class="solution">
+# Libraries this app uses
 import streamlit as st
 import pandas as pd
 
+# A big title, then a line of text
 st.title("Weather explorer")
 st.write("Explore a year of daily weather in four Australian cities.")
 
+# Load the weather data from the CSV file
 df = pd.read_csv("data/weather.csv")
 
+# Show the whole table
 st.subheader("The data")
 st.dataframe(df)
 
+# How big is the table, and what are its columns?
 rows, columns = df.shape
 st.write("Rows:", rows)
 st.write("Columns:", columns)
 st.write("Column names:", df.columns.tolist())
 
+# Summary statistics for each number column
 st.subheader("Summary statistics")
 st.dataframe(df.describe())
   </script>
@@ -178,7 +200,8 @@ st.dataframe(df.describe())
     </ol>
   </div>
   <div class="hint">
-    <pre><code>hottest = df.sort_values("max_temp", ascending=False).head(10)
+    <pre><code># The 10 hottest days: sort highest first, keep 10
+hottest = df.sort_values("max_temp", ascending=False).head(10)
 
 st.subheader("The 10 hottest days")
 st.dataframe(hottest, hide_index=True)</code></pre>
@@ -189,29 +212,37 @@ st.dataframe(hottest, hide_index=True)</code></pre>
     <p>Your wettest-days table should be sorted by <code>rain_mm</code>, starting at over 60 mm.</p>
   </div>
   <script type="text/x-python" class="solution">
+# Libraries this app uses
 import streamlit as st
 import pandas as pd
 
+# A big title, then a line of text
 st.title("Weather explorer")
 st.write("Explore a year of daily weather in four Australian cities.")
 
+# Load the weather data from the CSV file
 df = pd.read_csv("data/weather.csv")
 
+# Show the whole table
 st.subheader("The data")
 st.dataframe(df)
 
+# How big is the table, and what are its columns?
 rows, columns = df.shape
 st.write("Rows:", rows)
 st.write("Columns:", columns)
 st.write("Column names:", df.columns.tolist())
 
+# Summary statistics for each number column
 st.subheader("Summary statistics")
 st.dataframe(df.describe())
 
+# The 10 hottest days: sort highest first, keep 10
 hottest = df.sort_values("max_temp", ascending=False).head(10)
 st.subheader("The 10 hottest days")
 st.dataframe(hottest, hide_index=True)
 
+# The same for the 10 wettest days
 wettest = df.sort_values("rain_mm", ascending=False).head(10)
 st.subheader("The 10 wettest days")
 st.dataframe(wettest, hide_index=True)
@@ -236,7 +267,8 @@ st.dataframe(wettest, hide_index=True)
     </ol>
   </div>
   <div class="hint">
-    <pre><code>melbourne = df[df["city"] == "Melbourne"]
+    <pre><code># Keep only Melbourne's rows and summarise them
+melbourne = df[df["city"] == "Melbourne"]
 
 st.subheader("Melbourne")
 st.metric("Average max temp (°C)", round(melbourne["max_temp"].mean(), 1))
@@ -248,33 +280,42 @@ st.metric("Total rain (mm)", round(melbourne["rain_mm"].sum(), 1))</code></pre>
     <p>If your numbers are 0 or blank, check the spelling of the city.</p>
   </div>
   <script type="text/x-python" class="solution">
+# Libraries this app uses
 import streamlit as st
 import pandas as pd
 
+# A big title, then a line of text
 st.title("Weather explorer")
 st.write("Explore a year of daily weather in four Australian cities.")
 
+# Load the weather data from the CSV file
 df = pd.read_csv("data/weather.csv")
 
+# Show the whole table
 st.subheader("The data")
 st.dataframe(df)
 
+# How big is the table, and what are its columns?
 rows, columns = df.shape
 st.write("Rows:", rows)
 st.write("Columns:", columns)
 st.write("Column names:", df.columns.tolist())
 
+# Summary statistics for each number column
 st.subheader("Summary statistics")
 st.dataframe(df.describe())
 
+# The 10 hottest days: sort highest first, keep 10
 hottest = df.sort_values("max_temp", ascending=False).head(10)
 st.subheader("The 10 hottest days")
 st.dataframe(hottest, hide_index=True)
 
+# The same for the 10 wettest days
 wettest = df.sort_values("rain_mm", ascending=False).head(10)
 st.subheader("The 10 wettest days")
 st.dataframe(wettest, hide_index=True)
 
+# Keep only Melbourne's rows and summarise them
 melbourne = df[df["city"] == "Melbourne"]
 st.subheader("Melbourne")
 st.metric("Average max temp (°C)", round(melbourne["max_temp"].mean(), 1))
@@ -300,10 +341,12 @@ st.metric("Total rain (mm)", round(melbourne["rain_mm"].sum(), 1))
     </ol>
   </div>
   <div class="hint">
-    <pre><code>st.subheader("All four cities")
+    <pre><code># Average each column for every city at once
+st.subheader("All four cities")
 averages = df.groupby("city")[["max_temp", "min_temp", "rain_mm", "sunshine_hours"]].mean().round(1)
 st.dataframe(averages)
 
+# Total rain for each city, then the wettest one
 total_rain = df.groupby("city")["rain_mm"].sum()
 st.write("The wettest city was", total_rain.idxmax())</code></pre>
   </div>
@@ -312,42 +355,53 @@ st.write("The wettest city was", total_rain.idxmax())</code></pre>
     <p>Then the sentence <strong>The wettest city was Sydney</strong>.</p>
   </div>
   <script type="text/x-python" class="solution">
+# Libraries this app uses
 import streamlit as st
 import pandas as pd
 
+# A big title, then a line of text
 st.title("Weather explorer")
 st.write("Explore a year of daily weather in four Australian cities.")
 
+# Load the weather data from the CSV file
 df = pd.read_csv("data/weather.csv")
 
+# Show the whole table
 st.subheader("The data")
 st.dataframe(df)
 
+# How big is the table, and what are its columns?
 rows, columns = df.shape
 st.write("Rows:", rows)
 st.write("Columns:", columns)
 st.write("Column names:", df.columns.tolist())
 
+# Summary statistics for each number column
 st.subheader("Summary statistics")
 st.dataframe(df.describe())
 
+# The 10 hottest days: sort highest first, keep 10
 hottest = df.sort_values("max_temp", ascending=False).head(10)
 st.subheader("The 10 hottest days")
 st.dataframe(hottest, hide_index=True)
 
+# The same for the 10 wettest days
 wettest = df.sort_values("rain_mm", ascending=False).head(10)
 st.subheader("The 10 wettest days")
 st.dataframe(wettest, hide_index=True)
 
+# Keep only Melbourne's rows and summarise them
 melbourne = df[df["city"] == "Melbourne"]
 st.subheader("Melbourne")
 st.metric("Average max temp (°C)", round(melbourne["max_temp"].mean(), 1))
 st.metric("Total rain (mm)", round(melbourne["rain_mm"].sum(), 1))
 
+# Average each column for every city at once
 st.subheader("All four cities")
 averages = df.groupby("city")[["max_temp", "min_temp", "rain_mm", "sunshine_hours"]].mean().round(1)
 st.dataframe(averages)
 
+# Total rain for each city, then the wettest one
 total_rain = df.groupby("city")["rain_mm"].sum()
 st.write("The wettest city was", total_rain.idxmax())
   </script>

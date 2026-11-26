@@ -234,7 +234,7 @@ function buildLayout() {
         ui.suggestBox = el("input", { type: "checkbox", "aria-describedby": "suggest-help" }),
         " Suggestions",
         el("span", { id: "suggest-help", class: "visually-hidden" },
-          "When on, the editor suggests Streamlit, pandas and Plotly functions and column names as you type. Use the down arrow to choose one, then Enter or Tab."),
+          "When on, the editor suggests Streamlit, pandas and Plotly functions and column names as you type. Enter or Tab inserts the highlighted suggestion; the arrow keys choose another; Esc closes the list."),
       ),
     ),
   );
@@ -278,7 +278,7 @@ function buildExtras() {
       files.length
         ? el("p", {}, "Download .py saves your code as a normal Streamlit file. To run it on your own computer, put it in a folder together with a ", el("code", {}, "data"), " folder holding ", files.map((f, i) => [i ? " and " : "", el("code", {}, f)]), ", then follow the instructions at the top of the file.")
         : el("p", {}, "Download .py saves your code as a normal Streamlit file. To run it on your own computer, follow the instructions at the top of the file."),
-      el("p", {}, "As you type, the editor suggests Streamlit, pandas and Plotly functions (after ", el("code", {}, "st."), ", ", el("code", {}, "pd."), ", ", el("code", {}, "px."), " or a table's name) and column names (inside quotes). Press the down arrow to choose one, then Enter or Tab. If the suggestions get in the way, untick Suggestions under the editor."),
+      el("p", {}, "As you type, the editor suggests Streamlit, pandas and Plotly functions (after ", el("code", {}, "st."), ", ", el("code", {}, "pd."), ", ", el("code", {}, "px."), " or a table's name) and column names (inside quotes). Enter or Tab inserts the highlighted suggestion, the arrow keys choose another, and Esc closes the list. If the suggestions get in the way, untick Suggestions under the editor."),
       el("p", {}, "If the app freezes (for example, because of a loop that never ends), press Stop / restart Python. Your code is kept."),
     ),
     el("p", { class: "muted" },
@@ -540,12 +540,12 @@ async function upgradeToCodeMirror() {
   });
 
   // Suggestions: our own list only (no Python built-ins), shown after "st.",
-  // "pd.", "px.", a table or a column, and column names inside quotes. Nothing
-  // is pre-selected, so Enter still makes a new line unless the student has
-  // arrowed into the list. A checkbox under the editor turns them off.
+  // "pd.", "px.", a table or a column, and column names inside quotes. The top
+  // suggestion is pre-selected, as in VS Code: Enter or Tab inserts it and Esc
+  // closes the list. A checkbox under the editor turns suggestions off.
   const suggestions = new Compartment();
   const source = completions?.makeCompletionSource(() => cfg.datasets.flatMap((d) => d.columns || []));
-  const suggestionsOn = () => autocompletion({ override: [source], selectOnOpen: false, icons: false });
+  const suggestionsOn = () => autocompletion({ override: [source], icons: false });
   const suggestionsOff = () => autocompletion({ override: [() => null], activateOnTyping: false });
   const wantSuggestions = () => !!source && loadSettings().suggestions !== false;
   const highlight = HighlightStyle.define([

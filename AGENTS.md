@@ -136,9 +136,9 @@ with a `____` left in, the engine gives a "There's still a blank" hint.
   `px.`, a table variable (worked out from assignments like `= pd.read_csv(` or
   `= df[...]`) or a column (`df["x"].`). Column names from the page's
   `datasets[].columns` appear inside quotes where a column is expected (`df["`,
-  `x="`, `groupby("` ...). Python's built-in suggestions are switched off. Nothing
-  is pre-selected, so Enter still makes a new line; the down arrow then Enter or
-  Tab accepts. Students can turn suggestions off with the checkbox under the
+  `x="`, `groupby("` ...). Python's built-in suggestions are switched off. The top
+  suggestion is pre-selected, as in VS Code: Enter or Tab inserts it, the arrow
+  keys choose another and Esc closes the list. Students can turn suggestions off with the checkbox under the
   editor, and the choice applies to every exercise. Keep the list short: add a
   function only when an exercise uses it or a student is likely to want it.
 - **Testing hook:** `window.__exercise` exposes `steps`, `setCode`, `getCode`,

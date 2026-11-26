@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Streamlit beginnings</title>
+<meta name="description" content="Self-paced, in-browser exercises that teach the basics of Streamlit, pandas and Plotly.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@600&family=Public+Sans:wght@400;600&display=swap">
+<link rel="stylesheet" href="shared/style.css">
+</head>
+<body>
+<main class="landing">
+  <p class="eyebrow">Python · Data · Web apps</p>
+  <h1>Streamlit beginnings</h1>
+  <p class="lede">Build real data apps with Python, right in your browser. Each exercise builds one app, step by step: you'll load data with pandas, draw charts with Plotly and add controls so people can explore the data themselves.</p>
+
+  <ul class="cards">
+    <li class="card" data-exercise="01-weather-explorer" data-steps="6">
+      <p class="num">Exercise 1</p>
+      <h2><a href="exercises/01-weather-explorer.html">Weather explorer</a></h2>
+      <p>Your first Streamlit app. Read a CSV file into a DataFrame, then explore it: its size, summary statistics, sorting and filtering.</p>
+      <div class="tags"><span class="tag">CSV</span><span class="tag">pandas</span><span class="tag">st.dataframe</span></div>
+      <p class="progress" aria-live="polite"></p>
+    </li>
+    <li class="card" data-exercise="02-carnival-charts" data-steps="6">
+      <p class="num">Exercise 2</p>
+      <h2><a href="exercises/02-carnival-charts.html">Carnival charts</a></h2>
+      <p>Turn a school athletics carnival spreadsheet into bar charts, scatter plots and box plots for the newsletter.</p>
+      <div class="tags"><span class="tag">Excel</span><span class="tag">groupby</span><span class="tag">Plotly Express</span></div>
+      <p class="progress" aria-live="polite"></p>
+    </li>
+    <li class="card" data-exercise="03-pokemon-explorer" data-steps="6">
+      <p class="num">Exercise 3</p>
+      <h2><a href="exercises/03-pokemon-explorer.html">Pokémon explorer</a></h2>
+      <p>Add checkboxes, drop-downs, sliders and multiselects that filter the data and drive a chart.</p>
+      <div class="tags"><span class="tag">Widgets</span><span class="tag">Filtering</span><span class="tag">Sidebar</span></div>
+      <p class="progress" aria-live="polite"></p>
+    </li>
+    <li class="card" data-exercise="04-my-dashboard" data-steps="5">
+      <p class="num">Exercise 4</p>
+      <h2><a href="exercises/04-my-dashboard.html">My data dashboard</a></h2>
+      <p>Put it all together: a dashboard that works with any CSV or Excel file you upload.</p>
+      <div class="tags"><span class="tag">File upload</span><span class="tag">Charts</span><span class="tag">Tabs</span></div>
+      <p class="progress" aria-live="polite"></p>
+    </li>
+  </ul>
+
+  <section class="how" aria-labelledby="how-title">
+    <h2 id="how-title">How this site works</h2>
+    <ul>
+      <li><strong>Everything runs in your browser.</strong> Python, pandas, Plotly and Streamlit run inside the web page (using Pyodide and stlite). There's nothing to install and no account.</li>
+      <li><strong>Nothing is uploaded.</strong> Your code, and any file you open in exercise 4, stays on your device.</li>
+      <li><strong>The first load is slow.</strong> Python takes 30 seconds or more to download the first time; after that your browser keeps a copy and it's quicker. Read the introduction while you wait.</li>
+      <li><strong>Your progress is saved in this browser.</strong> Your code and ticked-off steps are kept on this device for next time. Clearing your browser data, or using a private window, removes them. Each exercise has a <em>Reset progress</em> link.</li>
+      <li><strong>Check your own work.</strong> Answers aren't marked automatically. Each step has a hint and a description of what you should see. If you get stuck, <em>Load the starting code for this step</em> lets you carry on.</li>
+      <li><strong>Keep your apps.</strong> <em>Download .py</em> saves your code as a normal Streamlit file. To run it on your own computer, install the packages with <code>pip install streamlit pandas plotly openpyxl</code>, then run <code>streamlit run</code> followed by the file name. The data files are on the last step of each exercise.</li>
+    </ul>
+  </section>
+
+  <p class="site-footer">The weather and athletics data are simulated, and all the names in them are made up. The Pokémon data is <a href="https://www.kaggle.com/datasets/ulrikthygepedersen/pokemon-stats">Pokemon Stats</a> by Ulrik Thyge Pedersen, licensed under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>, with a few corrections.</p>
+</main>
+
+<script>
+  // Show saved progress on each card. Saved by shared/engine.js.
+  document.querySelectorAll(".card[data-exercise]").forEach(function (card) {
+    var out = card.querySelector(".progress");
+    var total = Number(card.dataset.steps);
+    var data = null;
+    try {
+      data = JSON.parse(window.localStorage.getItem("streamlit-beginnings:" + card.dataset.exercise));
+    } catch (e) {
+      data = null;
+    }
+    if (!data || !out) return;
+    var done = Array.isArray(data.done) ? data.done.length : 0;
+    if (data.view > total || done >= total) {
+      out.textContent = "✓ Finished";
+      out.classList.add("progress-done");
+    } else if (done > 0) {
+      out.textContent = done + " of " + total + " steps done";
+    } else if (data.view > 0) {
+      out.textContent = "Started";
+    }
+  });
+</script>
+</body>
+</html>

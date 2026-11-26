@@ -1,0 +1,467 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>My data dashboard · Streamlit beginnings</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@600&family=Public+Sans:wght@400;600&display=swap">
+<link rel="stylesheet" href="../shared/style.css">
+</head>
+<body>
+
+<script type="application/json" id="exercise">
+{
+  "id": "04-my-dashboard",
+  "number": 4,
+  "title": "My data dashboard",
+  "filename": "04_my_dashboard.py",
+  "datasets": []
+}
+</script>
+
+<section id="intro">
+  <p>Time to put it all together. Your apps so far worked with one dataset that was written into the code. This dashboard works with <strong>any</strong> CSV or Excel file: the user uploads a file, and the app shows its size, a table, a summary and a chart they can configure.</p>
+  <p>In this exercise you will:</p>
+  <ul>
+    <li>let the user upload a file with <code>st.file_uploader</code></li>
+    <li>handle both CSV and Excel files</li>
+    <li>build chart controls from the file's own column names</li>
+    <li>organise everything with a sidebar and tabs</li>
+  </ul>
+  <p>You'll need a data file to upload. Use your own, or download one of these and upload it when you get to step 1:</p>
+  <ul>
+    <li><a href="../data/weather.csv" download="weather.csv">weather.csv</a> (daily weather, 1,460 rows)</li>
+    <li><a href="../data/pokemon.csv" download="pokemon.csv">pokemon.csv</a> (Pokémon stats, 1,072 rows)</li>
+    <li><a href="../data/athletics.xlsx" download="athletics.xlsx">athletics.xlsx</a> (carnival results, 288 rows, Excel)</li>
+  </ul>
+  <div class="note">
+    <p>Uploaded files stay inside your browser: nothing is sent to a server. Keep files small (under about 5 MB) so your device doesn't run out of memory.</p>
+  </div>
+</section>
+
+<!-- ------------------------------------------------------------ step 1 -->
+<article class="step" data-title="Upload a file">
+  <div class="story">
+    <p><code>st.file_uploader</code> draws an upload box. Until the user has uploaded something it gives back <code>None</code>, a special value that means "nothing".</p>
+    <p>If there's no file yet, there's nothing for the rest of the app to show. Show a message, then stop the script with <code>st.stop()</code>.</p>
+    <p>pandas can read the uploaded file directly: <code>pd.read_csv(uploaded)</code>.</p>
+  </div>
+  <div class="task">
+    <ol>
+      <li>Add an uploader that accepts CSV files: <code>uploaded = st.file_uploader("Choose a CSV file", type=["csv"])</code></li>
+      <li>If <code>uploaded is None</code>, show <code>st.info("Upload a file to get started.")</code> and call <code>st.stop()</code>.</li>
+      <li>Otherwise read it into <code>df</code>, show the file's name (<code>uploaded.name</code>) and show the table.</li>
+      <li>Run the app and upload <code>weather.csv</code>.</li>
+    </ol>
+  </div>
+  <div class="hint">
+    <pre><code>uploaded = st.file_uploader("Choose a CSV file", type=["csv"])
+
+if uploaded is None:
+    st.info("Upload a file to get started.")
+    st.stop()
+
+df = pd.read_csv(uploaded)
+st.write("File:", uploaded.name)
+st.dataframe(df)</code></pre>
+    <p>Use <code>is None</code> to check for <code>None</code>.</p>
+  </div>
+  <div class="expect">
+    <p>Before you upload: an upload box and a blue message, <strong>Upload a file to get started.</strong></p>
+    <p>After you upload <code>weather.csv</code>: <strong>File: weather.csv</strong> and its table.</p>
+  </div>
+  <script type="text/x-python" class="start">
+import streamlit as st
+import pandas as pd
+
+st.title("My data dashboard")
+st.write("Upload a data file to explore it.")
+
+  </script>
+  <script type="text/x-python" class="solution">
+import streamlit as st
+import pandas as pd
+
+st.title("My data dashboard")
+st.write("Upload a data file to explore it.")
+
+uploaded = st.file_uploader("Choose a CSV file", type=["csv"])
+
+if uploaded is None:
+    st.info("Upload a file to get started.")
+    st.stop()
+
+df = pd.read_csv(uploaded)
+st.write("File:", uploaded.name)
+st.dataframe(df)
+  </script>
+</article>
+
+<!-- ------------------------------------------------------------ step 2 -->
+<article class="step" data-title="Excel files and an overview">
+  <div class="story">
+    <p>Let's accept Excel files too. The file's name tells you which kind it is: <code>uploaded.name.endswith(".xlsx")</code> is <code>True</code> for an Excel file. Use <code>if</code> and <code>else</code> to choose how to read it.</p>
+    <p>Then add an overview row of metrics. <code>df.isna().sum().sum()</code> counts the empty cells (missing values) in the whole table.</p>
+  </div>
+  <div class="task">
+    <ol>
+      <li>Change the uploader's label to <em>Choose a CSV or Excel file</em> and allow both types: <code>type=["csv", "xlsx"]</code>.</li>
+      <li>Read the file with <code>pd.read_excel</code> if its name ends with <code>.xlsx</code>, and with <code>pd.read_csv</code> otherwise.</li>
+      <li>Under the file name, show three metrics in columns: the number of rows, the number of columns (<code>len(df.columns)</code>) and the number of missing values.</li>
+    </ol>
+  </div>
+  <div class="hint">
+    <pre><code>if uploaded.name.endswith(".xlsx"):
+    df = pd.read_excel(uploaded)
+else:
+    df = pd.read_csv(uploaded)
+
+col1, col2, col3 = st.columns(3)
+col1.metric("Rows", len(df))
+col2.metric("Columns", len(df.columns))
+col3.metric("Missing values", int(df.isna().sum().sum()))</code></pre>
+    <p>Because the uploader changed, you'll need to upload your file again after you press Run.</p>
+  </div>
+  <div class="expect">
+    <p>Upload <code>athletics.xlsx</code>: <strong>288</strong> rows, <strong>9</strong> columns, <strong>0</strong> missing values.</p>
+    <p>Upload <code>pokemon.csv</code>: <strong>1072</strong> rows, <strong>13</strong> columns and <strong>499</strong> missing values (Pokémon with only one type have an empty <code>type2</code>).</p>
+  </div>
+  <script type="text/x-python" class="solution">
+import streamlit as st
+import pandas as pd
+
+st.title("My data dashboard")
+st.write("Upload a data file to explore it.")
+
+uploaded = st.file_uploader("Choose a CSV or Excel file", type=["csv", "xlsx"])
+
+if uploaded is None:
+    st.info("Upload a file to get started.")
+    st.stop()
+
+if uploaded.name.endswith(".xlsx"):
+    df = pd.read_excel(uploaded)
+else:
+    df = pd.read_csv(uploaded)
+
+st.write("File:", uploaded.name)
+
+col1, col2, col3 = st.columns(3)
+col1.metric("Rows", len(df))
+col2.metric("Columns", len(df.columns))
+col3.metric("Missing values", int(df.isna().sum().sum()))
+
+st.dataframe(df)
+  </script>
+</article>
+
+<!-- ------------------------------------------------------------ step 3 -->
+<article class="step" data-title="A chart for any file">
+  <div class="story">
+    <p>You don't know in advance which columns the file will have, so build the chart controls from the file itself:</p>
+    <ul>
+      <li><code>df.columns.tolist()</code> lists every column, which suits the x axis.</li>
+      <li><code>df.select_dtypes("number").columns.tolist()</code> lists only the number columns, which suits the y axis.</li>
+    </ul>
+    <p>A <strong>radio</strong> widget shows a few options as buttons. To do different things for different choices, use <code>if</code>, <code>elif</code> ("else if") and <code>else</code>.</p>
+  </div>
+  <div class="task">
+    <ol>
+      <li>Import Plotly Express.</li>
+      <li>Make <code>number_columns</code>. If it's empty, show a warning and stop.</li>
+      <li>Add an <em>X axis</em> selectbox (all columns), a <em>Y axis</em> selectbox (number columns) and a <em>Chart type</em> radio with <code>["Scatter", "Line", "Bar"]</code> and <code>horizontal=True</code>.</li>
+      <li>Make <code>fig</code> with <code>px.scatter</code>, <code>px.line</code> or <code>px.bar</code> depending on the chart type, and show it.</li>
+    </ol>
+  </div>
+  <div class="hint">
+    <pre><code>number_columns = df.select_dtypes("number").columns.tolist()
+if len(number_columns) == 0:
+    st.warning("This file has no number columns to plot.")
+    st.stop()
+
+x_col = st.selectbox("X axis", df.columns.tolist())
+y_col = st.selectbox("Y axis", number_columns)
+chart_type = st.radio("Chart type", ["Scatter", "Line", "Bar"], horizontal=True)
+
+if chart_type == "Scatter":
+    fig = px.scatter(df, x=x_col, y=y_col)
+elif chart_type == "Line":
+    fig = px.line(df, x=x_col, y=y_col)
+else:
+    fig = px.bar(df, x=x_col, y=y_col)
+
+st.plotly_chart(fig)</code></pre>
+  </div>
+  <div class="expect">
+    <p>With <code>weather.csv</code>: the x axis starts on <code>date</code> and the y axis on <code>max_temp</code>, so you see a year of temperatures, warm at the start and end of the year and cool in the middle.</p>
+    <p>Switch to <strong>Line</strong>: the line zigzags, because the four cities are mixed together. You'll fix that in the next step.</p>
+  </div>
+  <script type="text/x-python" class="solution">
+import streamlit as st
+import pandas as pd
+import plotly.express as px
+
+st.title("My data dashboard")
+st.write("Upload a data file to explore it.")
+
+uploaded = st.file_uploader("Choose a CSV or Excel file", type=["csv", "xlsx"])
+
+if uploaded is None:
+    st.info("Upload a file to get started.")
+    st.stop()
+
+if uploaded.name.endswith(".xlsx"):
+    df = pd.read_excel(uploaded)
+else:
+    df = pd.read_csv(uploaded)
+
+st.write("File:", uploaded.name)
+
+col1, col2, col3 = st.columns(3)
+col1.metric("Rows", len(df))
+col2.metric("Columns", len(df.columns))
+col3.metric("Missing values", int(df.isna().sum().sum()))
+
+st.dataframe(df)
+
+number_columns = df.select_dtypes("number").columns.tolist()
+if len(number_columns) == 0:
+    st.warning("This file has no number columns to plot.")
+    st.stop()
+
+x_col = st.selectbox("X axis", df.columns.tolist())
+y_col = st.selectbox("Y axis", number_columns)
+chart_type = st.radio("Chart type", ["Scatter", "Line", "Bar"], horizontal=True)
+
+if chart_type == "Scatter":
+    fig = px.scatter(df, x=x_col, y=y_col)
+elif chart_type == "Line":
+    fig = px.line(df, x=x_col, y=y_col)
+else:
+    fig = px.bar(df, x=x_col, y=y_col)
+
+st.plotly_chart(fig)
+  </script>
+</article>
+
+<!-- ------------------------------------------------------------ step 4 -->
+<article class="step" data-title="Colour and averages">
+  <div class="story">
+    <p>Two more controls make the chart much more useful:</p>
+    <ul>
+      <li><strong>Colour by</strong> a column, so each city (or house, or type) gets its own colour and its own line. The first option, <em>(none)</em>, means no colour.</li>
+      <li><strong>Average</strong> the y values for each x value. For example, the average <code>max_temp</code> for each <code>month</code>.</li>
+    </ul>
+    <p>Averaging makes a new, smaller table with just two columns, so there's nothing left to colour by. In that case, set the colour back to <code>None</code>.</p>
+  </div>
+  <div class="task">
+    <ol>
+      <li>Add a <em>Colour by</em> selectbox with <code>["(none)"] + df.columns.tolist()</code> as its options. Set <code>colour</code> to <code>None</code> if the choice is <code>"(none)"</code>, and to the chosen column otherwise.</li>
+      <li>Add a checkbox <em>Average the y values for each x value</em>.</li>
+      <li>Make <code>plot_df = df</code>. If the box is ticked, replace it with the averages and set <code>colour</code> to <code>None</code>.</li>
+      <li>Use <code>plot_df</code> and <code>color=colour</code> in all three chart functions, and add an f-string title.</li>
+    </ol>
+  </div>
+  <div class="hint">
+    <pre><code>colour_choice = st.selectbox("Colour by", ["(none)"] + df.columns.tolist())
+average = st.checkbox("Average the y values for each x value")
+
+if colour_choice == "(none)":
+    colour = None
+else:
+    colour = colour_choice
+
+plot_df = df
+if average and x_col != y_col:
+    plot_df = df.groupby(x_col)[y_col].mean().reset_index()
+    colour = None
+
+title = f"{y_col} by {x_col}"
+if chart_type == "Scatter":
+    fig = px.scatter(plot_df, x=x_col, y=y_col, color=colour, title=title)</code></pre>
+    <p>Do the same for <code>px.line</code> and <code>px.bar</code>. (<code>x_col != y_col</code> skips averaging if you picked the same column twice, which pandas can't do.)</p>
+  </div>
+  <div class="expect">
+    <p>With <code>weather.csv</code>, choose <strong>Line</strong> and colour by <strong>city</strong>: four smooth lines, one per city.</p>
+    <p>Choose <code>month</code> on the x axis, tick <em>Average…</em> and choose <strong>Bar</strong>: 12 bars showing the average maximum temperature in each month.</p>
+  </div>
+  <script type="text/x-python" class="solution">
+import streamlit as st
+import pandas as pd
+import plotly.express as px
+
+st.title("My data dashboard")
+st.write("Upload a data file to explore it.")
+
+uploaded = st.file_uploader("Choose a CSV or Excel file", type=["csv", "xlsx"])
+
+if uploaded is None:
+    st.info("Upload a file to get started.")
+    st.stop()
+
+if uploaded.name.endswith(".xlsx"):
+    df = pd.read_excel(uploaded)
+else:
+    df = pd.read_csv(uploaded)
+
+st.write("File:", uploaded.name)
+
+col1, col2, col3 = st.columns(3)
+col1.metric("Rows", len(df))
+col2.metric("Columns", len(df.columns))
+col3.metric("Missing values", int(df.isna().sum().sum()))
+
+st.dataframe(df)
+
+number_columns = df.select_dtypes("number").columns.tolist()
+if len(number_columns) == 0:
+    st.warning("This file has no number columns to plot.")
+    st.stop()
+
+x_col = st.selectbox("X axis", df.columns.tolist())
+y_col = st.selectbox("Y axis", number_columns)
+chart_type = st.radio("Chart type", ["Scatter", "Line", "Bar"], horizontal=True)
+colour_choice = st.selectbox("Colour by", ["(none)"] + df.columns.tolist())
+average = st.checkbox("Average the y values for each x value")
+
+if colour_choice == "(none)":
+    colour = None
+else:
+    colour = colour_choice
+
+plot_df = df
+if average and x_col != y_col:
+    plot_df = df.groupby(x_col)[y_col].mean().reset_index()
+    colour = None
+
+title = f"{y_col} by {x_col}"
+if chart_type == "Scatter":
+    fig = px.scatter(plot_df, x=x_col, y=y_col, color=colour, title=title)
+elif chart_type == "Line":
+    fig = px.line(plot_df, x=x_col, y=y_col, color=colour, title=title)
+else:
+    fig = px.bar(plot_df, x=x_col, y=y_col, color=colour, title=title)
+
+st.plotly_chart(fig)
+  </script>
+</article>
+
+<!-- ------------------------------------------------------------ step 5 -->
+<article class="step" data-title="Dashboard layout">
+  <div class="story">
+    <p>Finish the dashboard by moving the chart settings into the <strong>sidebar</strong> and splitting the page into <strong>tabs</strong>: the chart, the data and a summary.</p>
+    <p class="note">The sidebar is narrow in this small app panel. Use the arrow at its top to hide it. On your own computer, your app gets the whole screen.</p>
+  </div>
+  <div class="task">
+    <ol>
+      <li>Put the five chart settings (x, y, chart type, colour, average) inside <code>with st.sidebar:</code>, under a header <em>Chart settings</em>.</li>
+      <li>Make three tabs: <em>Chart</em>, <em>Data</em> and <em>Summary</em>.</li>
+      <li>Put the chart in the first tab, the table in the second, and <code>df.describe()</code> in the third.</li>
+      <li>Remove the old <code>st.dataframe(df)</code> line so the table only appears once.</li>
+    </ol>
+  </div>
+  <div class="hint">
+    <pre><code>with st.sidebar:
+    st.header("Chart settings")
+    x_col = st.selectbox("X axis", df.columns.tolist())
+    # ...the other four settings, indented the same way...
+
+# ...work out colour, plot_df and fig as before...
+
+tab1, tab2, tab3 = st.tabs(["Chart", "Data", "Summary"])
+with tab1:
+    st.plotly_chart(fig)
+with tab2:
+    st.dataframe(df)
+with tab3:
+    st.dataframe(df.describe())</code></pre>
+  </div>
+  <div class="expect">
+    <p>The upload box and the three metrics at the top, then three tabs. The chart settings are in the sidebar, and changing them updates the chart.</p>
+    <p>Try each of the three sample files, and a file of your own.</p>
+  </div>
+  <script type="text/x-python" class="solution">
+import streamlit as st
+import pandas as pd
+import plotly.express as px
+
+st.title("My data dashboard")
+st.write("Upload a data file to explore it.")
+
+uploaded = st.file_uploader("Choose a CSV or Excel file", type=["csv", "xlsx"])
+
+if uploaded is None:
+    st.info("Upload a file to get started.")
+    st.stop()
+
+if uploaded.name.endswith(".xlsx"):
+    df = pd.read_excel(uploaded)
+else:
+    df = pd.read_csv(uploaded)
+
+st.write("File:", uploaded.name)
+
+col1, col2, col3 = st.columns(3)
+col1.metric("Rows", len(df))
+col2.metric("Columns", len(df.columns))
+col3.metric("Missing values", int(df.isna().sum().sum()))
+
+number_columns = df.select_dtypes("number").columns.tolist()
+if len(number_columns) == 0:
+    st.warning("This file has no number columns to plot.")
+    st.stop()
+
+with st.sidebar:
+    st.header("Chart settings")
+    x_col = st.selectbox("X axis", df.columns.tolist())
+    y_col = st.selectbox("Y axis", number_columns)
+    chart_type = st.radio("Chart type", ["Scatter", "Line", "Bar"], horizontal=True)
+    colour_choice = st.selectbox("Colour by", ["(none)"] + df.columns.tolist())
+    average = st.checkbox("Average the y values for each x value")
+
+if colour_choice == "(none)":
+    colour = None
+else:
+    colour = colour_choice
+
+plot_df = df
+if average and x_col != y_col:
+    plot_df = df.groupby(x_col)[y_col].mean().reset_index()
+    colour = None
+
+title = f"{y_col} by {x_col}"
+if chart_type == "Scatter":
+    fig = px.scatter(plot_df, x=x_col, y=y_col, color=colour, title=title)
+elif chart_type == "Line":
+    fig = px.line(plot_df, x=x_col, y=y_col, color=colour, title=title)
+else:
+    fig = px.bar(plot_df, x=x_col, y=y_col, color=colour, title=title)
+
+tab1, tab2, tab3 = st.tabs(["Chart", "Data", "Summary"])
+with tab1:
+    st.plotly_chart(fig)
+with tab2:
+    st.dataframe(df)
+with tab3:
+    st.dataframe(df.describe())
+  </script>
+</article>
+
+<section id="finish">
+  <p>You've built a dashboard that works with any data file. That's a real tool you can use for projects in other subjects.</p>
+  <p>Across the four exercises you've used most of the Streamlit basics: text, tables, metrics, Plotly charts, widgets, columns, tabs, the sidebar and file uploads.</p>
+  <p><strong>Extensions:</strong></p>
+  <ul>
+    <li>Add a multiselect that filters the rows by the values in a column the user chooses.</li>
+    <li>Add <code>st.download_button</code> so the user can download the data behind the chart as a CSV (<code>plot_df.to_csv(index=False)</code>).</li>
+    <li>Run your app on your own computer and share it with a friend.</li>
+  </ul>
+  <p>When you run this app on your own computer, you'll need a data file to upload. The sample files are linked in the introduction.</p>
+</section>
+
+<noscript><p>This exercise needs JavaScript turned on.</p></noscript>
+<script type="module" src="../shared/engine.js"></script>
+</body>
+</html>

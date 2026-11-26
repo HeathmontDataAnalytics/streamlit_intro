@@ -1,0 +1,453 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pokémon explorer · Streamlit beginnings</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@600&family=Public+Sans:wght@400;600&display=swap">
+<link rel="stylesheet" href="../shared/style.css">
+</head>
+<body>
+
+<script type="application/json" id="exercise">
+{
+  "id": "03-pokemon-explorer",
+  "number": 3,
+  "title": "Pokémon explorer",
+  "filename": "03_pokemon_explorer.py",
+  "datasets": [
+    {
+      "path": "data/pokemon.csv",
+      "url": "../data/pokemon.csv",
+      "columns": ["number", "name", "type1", "type2", "total", "hp", "attack", "defense", "sp_attack", "sp_defense", "speed", "generation", "legendary"]
+    }
+  ]
+}
+</script>
+
+<section id="intro">
+  <p>So far your apps have shown the same thing every time. Now you'll add <strong>widgets</strong>: checkboxes, drop-down menus and sliders that let the person using the app choose what to see.</p>
+  <p>You'll build a Pokémon explorer. The data, <code>data/pokemon.csv</code>, has one row for each Pokémon (including Mega and other special forms), with its types, its battle stats and its generation. It comes from <a href="https://www.kaggle.com/datasets/ulrikthygepedersen/pokemon-stats">Pokemon Stats</a> by Ulrik Thyge Pedersen on Kaggle (licence: <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>), with a few errors corrected.</p>
+  <p>In this exercise you will:</p>
+  <ul>
+    <li>add a checkbox, a selectbox, a slider and a multiselect</li>
+    <li>use what the user picks to filter the data</li>
+    <li>let the user choose what a chart shows</li>
+    <li>lay out the app with a sidebar and columns</li>
+  </ul>
+  <div class="note">
+    <p><strong>The big idea:</strong> every time someone changes a widget, Streamlit runs your whole script again from the top. This time, the widget gives back the new value. So you write a widget like a normal variable: <code>chosen_type = st.selectbox(...)</code>.</p>
+  </div>
+</section>
+
+<!-- ------------------------------------------------------------ step 1 -->
+<article class="step" data-title="A checkbox">
+  <div class="story">
+    <p>The table is long, so let's hide it unless the user asks for it. <code>st.checkbox("label")</code> draws a checkbox and gives back <code>True</code> when it's ticked and <code>False</code> when it isn't.</p>
+    <p>An <code>if</code> statement runs the indented lines under it only when its condition is <code>True</code>:</p>
+    <pre><code>if show_data:
+    st.dataframe(df)</code></pre>
+  </div>
+  <div class="task">
+    <ol>
+      <li>Under the line that shows the count, add a checkbox labelled <em>Show all the data</em> and store its value in <code>show_data</code>.</li>
+      <li>Only show the table when <code>show_data</code> is <code>True</code>.</li>
+      <li>Run the app, then tick and untick the box.</li>
+    </ol>
+  </div>
+  <div class="hint">
+    <pre><code>show_data = st.checkbox("Show all the data")
+if show_data:
+    st.dataframe(df, hide_index=True)</code></pre>
+    <p>Don't forget the colon <code>:</code> at the end of the <code>if</code> line, and indent the line under it by 4 spaces.</p>
+  </div>
+  <div class="expect">
+    <p>The title, <strong>Pokémon in the data: 1072</strong>, and a checkbox. The table appears when you tick the box and disappears when you untick it.</p>
+  </div>
+  <script type="text/x-python" class="start">
+import streamlit as st
+import pandas as pd
+
+st.title("Pokémon explorer")
+
+df = pd.read_csv("data/pokemon.csv")
+st.write("Pokémon in the data:", len(df))
+st.dataframe(df, hide_index=True)
+  </script>
+  <script type="text/x-python" class="solution">
+import streamlit as st
+import pandas as pd
+
+st.title("Pokémon explorer")
+
+df = pd.read_csv("data/pokemon.csv")
+st.write("Pokémon in the data:", len(df))
+
+show_data = st.checkbox("Show all the data")
+if show_data:
+    st.dataframe(df, hide_index=True)
+  </script>
+</article>
+
+<!-- ------------------------------------------------------------ step 2 -->
+<article class="step" data-title="Pick a type">
+  <div class="story">
+    <p>A <strong>selectbox</strong> is a drop-down menu. You give it a label and a list of options, and it gives back the option the user picked.</p>
+    <p>To get the list of types, take the <code>type1</code> column's unique values, turn them into a list and sort it:</p>
+    <pre><code>types = sorted(df["type1"].unique().tolist())</code></pre>
+  </div>
+  <div class="task">
+    <ol>
+      <li>Make the sorted list of <code>types</code> as above.</li>
+      <li>Add a selectbox labelled <em>Choose a type</em> with those options, and store the choice in <code>chosen_type</code>.</li>
+      <li>Make <code>filtered</code>, the rows where <code>type1</code> equals <code>chosen_type</code>.</li>
+      <li>Show <code>len(filtered)</code> with a label, then show <code>filtered</code> as a table.</li>
+    </ol>
+  </div>
+  <div class="hint">
+    <pre><code>types = sorted(df["type1"].unique().tolist())
+chosen_type = st.selectbox("Choose a type", types)
+
+filtered = df[df["type1"] == chosen_type]
+st.write("Pokémon of this type:", len(filtered))
+st.dataframe(filtered, hide_index=True)</code></pre>
+    <p>Notice that <code>chosen_type</code> has no quotes around it. It's a variable holding whichever type was picked.</p>
+  </div>
+  <div class="expect">
+    <p>A drop-down menu of types. Choose <strong>Fire</strong>: you should see <strong>Pokémon of this type: 67</strong>, and a table of only Fire Pokémon, starting with Charmander.</p>
+    <p>Changing the menu updates the count and the table straight away, without pressing Run.</p>
+  </div>
+  <script type="text/x-python" class="solution">
+import streamlit as st
+import pandas as pd
+
+st.title("Pokémon explorer")
+
+df = pd.read_csv("data/pokemon.csv")
+st.write("Pokémon in the data:", len(df))
+
+show_data = st.checkbox("Show all the data")
+if show_data:
+    st.dataframe(df, hide_index=True)
+
+types = sorted(df["type1"].unique().tolist())
+chosen_type = st.selectbox("Choose a type", types)
+
+filtered = df[df["type1"] == chosen_type]
+st.write("Pokémon of this type:", len(filtered))
+st.dataframe(filtered, hide_index=True)
+  </script>
+</article>
+
+<!-- ------------------------------------------------------------ step 3 -->
+<article class="step" data-title="A slider">
+  <div class="story">
+    <p>Each Pokémon's <code>total</code> is the sum of its six battle stats. A <strong>slider</strong> lets the user pick a number by dragging. You give it a label, the smallest value, the largest value and the starting value:</p>
+    <pre><code>min_total = st.slider("Minimum total stats", 0, 1200, 300)</code></pre>
+    <p>You can filter a DataFrame that's already been filtered. Each line keeps fewer rows:</p>
+    <pre><code>filtered = df[df["type1"] == chosen_type]
+filtered = filtered[filtered["total"] >= min_total]</code></pre>
+  </div>
+  <div class="task">
+    <ol>
+      <li>Add the slider under the selectbox.</li>
+      <li>Add a second filtering line that keeps only rows where <code>total</code> is at least <code>min_total</code>. Put it after the type filter and before the count is shown.</li>
+      <li>Change the count label to <em>Pokémon that match:</em>.</li>
+    </ol>
+  </div>
+  <div class="hint">
+    <p><code>&gt;=</code> means "greater than or equal to". The second filter line uses <code>filtered</code> both inside and outside the brackets:</p>
+    <pre><code>filtered = filtered[filtered["total"] >= min_total]</code></pre>
+  </div>
+  <div class="expect">
+    <p>A slider starting at 300. With <strong>Fire</strong> chosen, <strong>65</strong> Pokémon match. Drag the slider to 500 and only <strong>29</strong> match.</p>
+  </div>
+  <script type="text/x-python" class="solution">
+import streamlit as st
+import pandas as pd
+
+st.title("Pokémon explorer")
+
+df = pd.read_csv("data/pokemon.csv")
+st.write("Pokémon in the data:", len(df))
+
+show_data = st.checkbox("Show all the data")
+if show_data:
+    st.dataframe(df, hide_index=True)
+
+types = sorted(df["type1"].unique().tolist())
+chosen_type = st.selectbox("Choose a type", types)
+min_total = st.slider("Minimum total stats", 0, 1200, 300)
+
+filtered = df[df["type1"] == chosen_type]
+filtered = filtered[filtered["total"] >= min_total]
+st.write("Pokémon that match:", len(filtered))
+st.dataframe(filtered, hide_index=True)
+  </script>
+</article>
+
+<!-- ------------------------------------------------------------ step 4 -->
+<article class="step" data-title="Generations and legendaries">
+  <div class="story">
+    <p>A <strong>multiselect</strong> lets the user pick several options. It gives back a <strong>list</strong>. <code>default=</code> sets which options start selected.</p>
+    <p><code>.isin(a_list)</code> checks whether each value is in a list, which is just what we need to filter by a multiselect:</p>
+    <pre><code>filtered = filtered[filtered["generation"].isin(chosen_generations)]</code></pre>
+  </div>
+  <div class="task">
+    <ol>
+      <li>Make a sorted list of <code>generations</code> from the <code>generation</code> column, the same way you made <code>types</code>.</li>
+      <li>Add a multiselect labelled <em>Generations</em>, with every generation selected to start with, and store the choice in <code>chosen_generations</code>.</li>
+      <li>Filter <code>filtered</code> so it keeps only the chosen generations.</li>
+      <li>Add a checkbox <em>Include legendary Pokémon</em> that starts ticked (<code>value=True</code>). When it's <strong>not</strong> ticked, keep only rows where <code>legendary</code> is <code>False</code>.</li>
+    </ol>
+  </div>
+  <div class="hint">
+    <pre><code>generations = sorted(df["generation"].unique().tolist())
+chosen_generations = st.multiselect("Generations", generations, default=generations)
+include_legendary = st.checkbox("Include legendary Pokémon", value=True)</code></pre>
+    <p>And with the other filter lines:</p>
+    <pre><code>filtered = filtered[filtered["generation"].isin(chosen_generations)]
+if not include_legendary:
+    filtered = filtered[filtered["legendary"] == False]</code></pre>
+  </div>
+  <div class="expect">
+    <p>A multiselect showing every generation as a tag. Removing a tag removes that generation from the table. With <strong>Fire</strong> and a minimum of 300, keeping only generation 1 leaves <strong>14</strong> Pokémon.</p>
+    <p>With all generations, unticking <em>Include legendary Pokémon</em> drops the Fire count from 65 to <strong>60</strong>.</p>
+  </div>
+  <script type="text/x-python" class="solution">
+import streamlit as st
+import pandas as pd
+
+st.title("Pokémon explorer")
+
+df = pd.read_csv("data/pokemon.csv")
+st.write("Pokémon in the data:", len(df))
+
+show_data = st.checkbox("Show all the data")
+if show_data:
+    st.dataframe(df, hide_index=True)
+
+types = sorted(df["type1"].unique().tolist())
+chosen_type = st.selectbox("Choose a type", types)
+min_total = st.slider("Minimum total stats", 0, 1200, 300)
+
+generations = sorted(df["generation"].unique().tolist())
+chosen_generations = st.multiselect("Generations", generations, default=generations)
+include_legendary = st.checkbox("Include legendary Pokémon", value=True)
+
+filtered = df[df["type1"] == chosen_type]
+filtered = filtered[filtered["total"] >= min_total]
+filtered = filtered[filtered["generation"].isin(chosen_generations)]
+if not include_legendary:
+    filtered = filtered[filtered["legendary"] == False]
+
+st.write("Pokémon that match:", len(filtered))
+st.dataframe(filtered, hide_index=True)
+  </script>
+</article>
+
+<!-- ------------------------------------------------------------ step 5 -->
+<article class="step" data-title="You choose the chart">
+  <div class="story">
+    <p>Widgets can control charts too. Let the user choose which two stats to compare in a scatter plot. The selectbox gives back a column name, which you pass straight to Plotly as <code>x</code> or <code>y</code>.</p>
+    <p><code>index=1</code> makes a selectbox start on the second option (Python counts from 0).</p>
+    <p>An <strong>f-string</strong> puts variables into text: <code>f"{y_stat} vs {x_stat}"</code> could become <code>"defense vs attack"</code>.</p>
+  </div>
+  <div class="task">
+    <ol>
+      <li>Add <code>import plotly.express as px</code> at the top.</li>
+      <li>Make a list of stat column names:<br><code>stats = ["hp", "attack", "defense", "sp_attack", "sp_defense", "speed", "total"]</code></li>
+      <li>Add two selectboxes, <em>X axis</em> and <em>Y axis</em>, starting on <code>attack</code> (<code>index=1</code>) and <code>defense</code> (<code>index=2</code>).</li>
+      <li>Under the count, draw a scatter plot of <code>filtered</code> using the chosen stats, with <code>hover_name="name"</code>, <code>color="legendary"</code> and an f-string title.</li>
+    </ol>
+  </div>
+  <div class="hint">
+    <pre><code>stats = ["hp", "attack", "defense", "sp_attack", "sp_defense", "speed", "total"]
+x_stat = st.selectbox("X axis", stats, index=1)
+y_stat = st.selectbox("Y axis", stats, index=2)</code></pre>
+    <p>After the filtering:</p>
+    <pre><code>fig = px.scatter(
+    filtered,
+    x=x_stat,
+    y=y_stat,
+    hover_name="name",
+    color="legendary",
+    title=f"{chosen_type} Pokémon: {y_stat} vs {x_stat}",
+)
+st.plotly_chart(fig)</code></pre>
+  </div>
+  <div class="expect">
+    <p>A scatter plot with one dot per Pokémon that matches your filters. Legendary Pokémon are a different colour. Hover over a dot to see its name.</p>
+    <p>Change either axis menu: the chart and its title update straight away. Try <code>speed</code> against <code>total</code>.</p>
+  </div>
+  <script type="text/x-python" class="solution">
+import streamlit as st
+import pandas as pd
+import plotly.express as px
+
+st.title("Pokémon explorer")
+
+df = pd.read_csv("data/pokemon.csv")
+st.write("Pokémon in the data:", len(df))
+
+show_data = st.checkbox("Show all the data")
+if show_data:
+    st.dataframe(df, hide_index=True)
+
+types = sorted(df["type1"].unique().tolist())
+chosen_type = st.selectbox("Choose a type", types)
+min_total = st.slider("Minimum total stats", 0, 1200, 300)
+
+generations = sorted(df["generation"].unique().tolist())
+chosen_generations = st.multiselect("Generations", generations, default=generations)
+include_legendary = st.checkbox("Include legendary Pokémon", value=True)
+
+stats = ["hp", "attack", "defense", "sp_attack", "sp_defense", "speed", "total"]
+x_stat = st.selectbox("X axis", stats, index=1)
+y_stat = st.selectbox("Y axis", stats, index=2)
+
+filtered = df[df["type1"] == chosen_type]
+filtered = filtered[filtered["total"] >= min_total]
+filtered = filtered[filtered["generation"].isin(chosen_generations)]
+if not include_legendary:
+    filtered = filtered[filtered["legendary"] == False]
+
+st.write("Pokémon that match:", len(filtered))
+
+fig = px.scatter(
+    filtered,
+    x=x_stat,
+    y=y_stat,
+    hover_name="name",
+    color="legendary",
+    title=f"{chosen_type} Pokémon: {y_stat} vs {x_stat}",
+)
+st.plotly_chart(fig)
+
+st.dataframe(filtered, hide_index=True)
+  </script>
+</article>
+
+<!-- ------------------------------------------------------------ step 6 -->
+<article class="step" data-title="Tidy the layout">
+  <div class="story">
+    <p>Real apps usually keep their controls in a <strong>sidebar</strong> and put headline numbers side by side in <strong>columns</strong>.</p>
+    <ul>
+      <li>Everything indented under <code>with st.sidebar:</code> goes in the sidebar.</li>
+      <li><code>col1, col2, col3 = st.columns(3)</code> makes three columns. Then <code>col1.metric(...)</code> puts a metric in the first one.</li>
+    </ul>
+    <p>Also, if the filters match nothing, a chart of nothing is confusing. <code>st.warning("...")</code> shows a message, and <code>st.stop()</code> stops the script there, so nothing below it runs.</p>
+    <p class="note">The sidebar is narrow in this small app panel. Use the arrow at its top to hide it. On your own computer, your app gets the whole screen.</p>
+  </div>
+  <div class="task">
+    <ol>
+      <li>Move the filter widgets (type, minimum total, generations, legendary) into <code>with st.sidebar:</code>, under a header <em>Filters</em>.</li>
+      <li>After filtering, if <code>len(filtered) == 0</code>, show a warning and call <code>st.stop()</code>.</li>
+      <li>Replace the <em>Pokémon that match</em> line with three metrics in columns: the number that match, their average <code>total</code> (rounded), and the name of the strongest one.</li>
+      <li>Put the two axis selectboxes side by side in two columns.</li>
+    </ol>
+  </div>
+  <div class="hint">
+    <pre><code>with st.sidebar:
+    st.header("Filters")
+    chosen_type = st.selectbox("Choose a type", types)
+    min_total = st.slider("Minimum total stats", 0, 1200, 300)
+    chosen_generations = st.multiselect("Generations", generations, default=generations)
+    include_legendary = st.checkbox("Include legendary Pokémon", value=True)</code></pre>
+    <p>The strongest Pokémon is the first row after sorting by <code>total</code>, highest first. <code>.iloc[0]</code> picks the first row:</p>
+    <pre><code>if len(filtered) == 0:
+    st.warning("No Pokémon match these filters. Try changing them.")
+    st.stop()
+
+strongest = filtered.sort_values("total", ascending=False).iloc[0]
+
+col1, col2, col3 = st.columns(3)
+col1.metric("Pokémon", len(filtered))
+col2.metric("Average total", round(filtered["total"].mean()))
+col3.metric("Strongest", strongest["name"])
+
+left, right = st.columns(2)
+x_stat = left.selectbox("X axis", stats, index=1)
+y_stat = right.selectbox("Y axis", stats, index=2)</code></pre>
+  </div>
+  <div class="expect">
+    <p>The filters are in a sidebar on the left. Across the top of the page are three metrics. With <strong>Fire</strong> and a minimum of 300: <strong>65</strong> Pokémon, an average total of <strong>464</strong>, and <strong>Ho-oh</strong> as the strongest.</p>
+    <p>Drag the minimum total up to 1200: you should see your warning instead of the charts.</p>
+  </div>
+  <script type="text/x-python" class="solution">
+import streamlit as st
+import pandas as pd
+import plotly.express as px
+
+st.title("Pokémon explorer")
+
+df = pd.read_csv("data/pokemon.csv")
+
+types = sorted(df["type1"].unique().tolist())
+generations = sorted(df["generation"].unique().tolist())
+stats = ["hp", "attack", "defense", "sp_attack", "sp_defense", "speed", "total"]
+
+with st.sidebar:
+    st.header("Filters")
+    chosen_type = st.selectbox("Choose a type", types)
+    min_total = st.slider("Minimum total stats", 0, 1200, 300)
+    chosen_generations = st.multiselect("Generations", generations, default=generations)
+    include_legendary = st.checkbox("Include legendary Pokémon", value=True)
+
+filtered = df[df["type1"] == chosen_type]
+filtered = filtered[filtered["total"] >= min_total]
+filtered = filtered[filtered["generation"].isin(chosen_generations)]
+if not include_legendary:
+    filtered = filtered[filtered["legendary"] == False]
+
+if len(filtered) == 0:
+    st.warning("No Pokémon match these filters. Try changing them.")
+    st.stop()
+
+strongest = filtered.sort_values("total", ascending=False).iloc[0]
+
+col1, col2, col3 = st.columns(3)
+col1.metric("Pokémon", len(filtered))
+col2.metric("Average total", round(filtered["total"].mean()))
+col3.metric("Strongest", strongest["name"])
+
+left, right = st.columns(2)
+x_stat = left.selectbox("X axis", stats, index=1)
+y_stat = right.selectbox("Y axis", stats, index=2)
+
+fig = px.scatter(
+    filtered,
+    x=x_stat,
+    y=y_stat,
+    hover_name="name",
+    color="legendary",
+    title=f"{chosen_type} Pokémon: {y_stat} vs {x_stat}",
+)
+st.plotly_chart(fig)
+
+st.dataframe(filtered, hide_index=True)
+
+show_data = st.checkbox("Show all the data")
+if show_data:
+    st.dataframe(df, hide_index=True)
+  </script>
+</article>
+
+<section id="finish">
+  <p>You've built an interactive explorer. You used:</p>
+  <ul>
+    <li><code>st.checkbox</code>, <code>st.selectbox</code>, <code>st.slider</code> and <code>st.multiselect</code></li>
+    <li><code>if</code> statements, <code>.isin()</code> and filtering one step at a time</li>
+    <li>a chart driven by the user's choices, and f-strings</li>
+    <li><code>st.sidebar</code>, <code>st.columns</code>, <code>st.metric</code>, <code>st.warning</code> and <code>st.stop</code></li>
+  </ul>
+  <p><strong>Extension:</strong> add a second selectbox for <code>type2</code>, or a text box (<code>st.text_input</code>) that searches for a name with <code>filtered["name"].str.contains(search, case=False)</code>.</p>
+  <p>Next, in exercise 4, you'll build a dashboard that works with <em>any</em> data file the user uploads.</p>
+</section>
+
+<noscript><p>This exercise needs JavaScript turned on.</p></noscript>
+<script type="module" src="../shared/engine.js"></script>
+</body>
+</html>

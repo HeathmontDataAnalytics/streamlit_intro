@@ -1,0 +1,539 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Carnival charts · Streamlit beginnings</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@600&family=Public+Sans:wght@400;600&display=swap">
+<link rel="stylesheet" href="../shared/style.css">
+</head>
+<body>
+
+<script type="application/json" id="exercise">
+{
+  "id": "02-carnival-charts",
+  "number": 2,
+  "title": "Carnival charts",
+  "filename": "02_carnival_charts.py",
+  "datasets": [
+    {
+      "path": "data/athletics.xlsx",
+      "url": "../data/athletics.xlsx",
+      "columns": ["event", "event_type", "year_level", "competitor", "house", "result", "unit", "place", "points"]
+    }
+  ]
+}
+</script>
+
+<section id="intro">
+  <p>Ridgeview College (a made-up school) has just held its athletics carnival. The results are in an Excel spreadsheet, and the sports department wants charts for the school newsletter. You'll build an app that makes them.</p>
+  <p>In this exercise you will:</p>
+  <ul>
+    <li>read an Excel file into a DataFrame</li>
+    <li>add up results with <code>groupby</code></li>
+    <li>draw bar charts, scatter plots and box plots with <strong>Plotly Express</strong></li>
+    <li>give charts titles, labels and the house colours</li>
+    <li>organise the app into tabs</li>
+  </ul>
+  <p>The data, <code>data/athletics.xlsx</code>, has one row for each competitor in each final: 288 rows. Each final has 8 runners or jumpers, 2 from each house (Banksia, Grevillea, Waratah and Wattle). 1st place earns 10 points, 2nd earns 8, down to 1 point for 8th. All names are made up.</p>
+  <div class="note">
+    <p>This exercise assumes you've done exercise 1, or know how <code>pd.read_csv</code>, <code>st.dataframe</code> and filtering with <code>df[df["column"] == value]</code> work.</p>
+  </div>
+</section>
+
+<!-- ------------------------------------------------------------ step 1 -->
+<article class="step" data-title="Read the spreadsheet">
+  <div class="story">
+    <p>Reading Excel works just like reading CSV: use <code>pd.read_excel()</code> instead of <code>pd.read_csv()</code>. (On your own computer, this needs the <code>openpyxl</code> package, which is already installed on this page.)</p>
+  </div>
+  <div class="task">
+    <ol>
+      <li>Read <code>data/athletics.xlsx</code> into a DataFrame called <code>df</code>.</li>
+      <li>Show how many results there are with <code>st.write("Results recorded:", len(df))</code>. <code>len(df)</code> is the number of rows.</li>
+      <li>Show the table with <code>st.dataframe(df, hide_index=True)</code>.</li>
+    </ol>
+  </div>
+  <div class="hint">
+    <pre><code>df = pd.read_excel("data/athletics.xlsx")
+st.write("Results recorded:", len(df))
+st.dataframe(df, hide_index=True)</code></pre>
+  </div>
+  <div class="expect">
+    <p><strong>Results recorded: 288</strong> and a table with the columns <code>event</code>, <code>event_type</code>, <code>year_level</code>, <code>competitor</code>, <code>house</code>, <code>result</code>, <code>unit</code>, <code>place</code> and <code>points</code>.</p>
+    <p>The first row is Ivy A. from Banksia, who won the Year 7 100m in 14.52 seconds.</p>
+  </div>
+  <script type="text/x-python" class="start">
+import streamlit as st
+import pandas as pd
+
+st.title("Athletics carnival results")
+
+# Read the Excel file into a DataFrame called df here
+
+  </script>
+  <script type="text/x-python" class="solution">
+import streamlit as st
+import pandas as pd
+
+st.title("Athletics carnival results")
+
+df = pd.read_excel("data/athletics.xlsx")
+st.write("Results recorded:", len(df))
+st.dataframe(df, hide_index=True)
+  </script>
+</article>
+
+<!-- ------------------------------------------------------------ step 2 -->
+<article class="step" data-title="Your first Plotly chart">
+  <div class="story">
+    <p>Which house is winning? First add up each house's points with <code>groupby</code>:</p>
+    <pre><code>house_points = df.groupby("house")["points"].sum().reset_index()</code></pre>
+    <p><code>.reset_index()</code> turns the result back into an ordinary table with two columns, <code>house</code> and <code>points</code>. That's the shape Plotly likes.</p>
+    <p><strong>Plotly Express</strong> (imported as <code>px</code>) makes a chart in one line. You say which table to use and which columns go on the x and y axes. <code>st.plotly_chart()</code> puts the chart on the page.</p>
+  </div>
+  <div class="task">
+    <ol>
+      <li>Add <code>import plotly.express as px</code> to the imports at the top.</li>
+      <li>Add a subheader <em>Points by house</em>.</li>
+      <li>Make <code>house_points</code> as above and show it with <code>st.dataframe</code>.</li>
+      <li>Make a bar chart: <code>fig = px.bar(house_points, x="house", y="points")</code>, then show it with <code>st.plotly_chart(fig)</code>.</li>
+    </ol>
+  </div>
+  <div class="hint">
+    <pre><code>st.subheader("Points by house")
+house_points = df.groupby("house")["points"].sum().reset_index()
+st.dataframe(house_points, hide_index=True)
+
+fig = px.bar(house_points, x="house", y="points")
+st.plotly_chart(fig)</code></pre>
+    <p>Check that you added the <code>import plotly.express as px</code> line, or Python won't know what <code>px</code> is.</p>
+  </div>
+  <div class="expect">
+    <p>A small table with 4 rows, then a bar chart with 4 bars. Banksia is winning with <strong>413</strong> points, then Grevillea (384), Waratah (321) and Wattle (286).</p>
+    <p>Hover over a bar to see its exact value. Plotly charts also let you zoom: drag across the chart, then double-click to zoom back out.</p>
+  </div>
+  <script type="text/x-python" class="solution">
+import streamlit as st
+import pandas as pd
+import plotly.express as px
+
+st.title("Athletics carnival results")
+
+df = pd.read_excel("data/athletics.xlsx")
+st.write("Results recorded:", len(df))
+st.dataframe(df, hide_index=True)
+
+st.subheader("Points by house")
+house_points = df.groupby("house")["points"].sum().reset_index()
+st.dataframe(house_points, hide_index=True)
+
+fig = px.bar(house_points, x="house", y="points")
+st.plotly_chart(fig)
+  </script>
+</article>
+
+<!-- ------------------------------------------------------------ step 3 -->
+<article class="step" data-title="Make it newsletter-ready">
+  <div class="story">
+    <p>A chart for the newsletter needs a title, readable axis labels and the right colours. Plotly functions take extra <strong>keyword arguments</strong> for each of these, like <code>title="..."</code>.</p>
+    <p>Each house has a colour. A Python <strong>dictionary</strong> stores pairs like these. The house name is the <em>key</em> and its colour is the <em>value</em>:</p>
+    <pre><code>house_colours = {
+    "Banksia": "orange",
+    "Grevillea": "royalblue",
+    "Waratah": "crimson",
+    "Wattle": "gold",
+}</code></pre>
+  </div>
+  <div class="task">
+    <ol>
+      <li>Sort <code>house_points</code> so the winning house comes first: add <code>.sort_values("points", ascending=False)</code> to the end of the line that makes it.</li>
+      <li>Add the <code>house_colours</code> dictionary near the top of your code, after <code>df</code> is read.</li>
+      <li>Change your <code>px.bar(...)</code> call so it also has:
+        <ul>
+          <li><code>color="house"</code> and <code>color_discrete_map=house_colours</code></li>
+          <li><code>title="Total points by house"</code></li>
+          <li><code>labels={"house": "House", "points": "Points"}</code> to tidy the axis labels</li>
+          <li><code>text="points"</code> to write the value on each bar</li>
+        </ul>
+      </li>
+    </ol>
+  </div>
+  <div class="hint">
+    <p>Long function calls can be split over several lines. Put a comma after each argument:</p>
+    <pre><code>fig = px.bar(
+    house_points,
+    x="house",
+    y="points",
+    color="house",
+    color_discrete_map=house_colours,
+    title="Total points by house",
+    labels={"house": "House", "points": "Points"},
+    text="points",
+)
+st.plotly_chart(fig)</code></pre>
+    <p>Plotly spells it <code>color</code>, the American way. The dictionary name is up to you; we used <code>house_colours</code>.</p>
+  </div>
+  <div class="expect">
+    <p>The bars are now in order (Banksia, Grevillea, Waratah, Wattle), each in its house colour, with the points written on the bar. The chart has the title <strong>Total points by house</strong> and the axes say <strong>House</strong> and <strong>Points</strong>.</p>
+  </div>
+  <script type="text/x-python" class="solution">
+import streamlit as st
+import pandas as pd
+import plotly.express as px
+
+st.title("Athletics carnival results")
+
+df = pd.read_excel("data/athletics.xlsx")
+st.write("Results recorded:", len(df))
+st.dataframe(df, hide_index=True)
+
+house_colours = {
+    "Banksia": "orange",
+    "Grevillea": "royalblue",
+    "Waratah": "crimson",
+    "Wattle": "gold",
+}
+
+st.subheader("Points by house")
+house_points = df.groupby("house")["points"].sum().reset_index().sort_values("points", ascending=False)
+st.dataframe(house_points, hide_index=True)
+
+fig = px.bar(
+    house_points,
+    x="house",
+    y="points",
+    color="house",
+    color_discrete_map=house_colours,
+    title="Total points by house",
+    labels={"house": "House", "points": "Points"},
+    text="points",
+)
+st.plotly_chart(fig)
+  </script>
+</article>
+
+<!-- ------------------------------------------------------------ step 4 -->
+<article class="step" data-title="Points by year level">
+  <div class="story">
+    <p>Is Banksia strong in every year level? You can group by <strong>two</strong> columns at once by passing a list:</p>
+    <pre><code>year_points = df.groupby(["year_level", "house"])["points"].sum().reset_index()</code></pre>
+    <p>That gives one row for each year level and house: 6 × 4 = 24 rows.</p>
+  </div>
+  <div class="task">
+    <ol>
+      <li>Add a subheader <em>Points by year level</em> and make <code>year_points</code> as above.</li>
+      <li>Draw a bar chart with <code>x="year_level"</code>, <code>y="points"</code> and <code>color="house"</code>. Use your <code>house_colours</code> again, and add a title and labels. Store it in a new variable, <code>fig2</code>.</li>
+      <li>Add <code>barmode="group"</code> so the houses' bars sit side by side.</li>
+      <li><strong>Try it:</strong> remove <code>barmode="group"</code> and run again. What changes? Which version is better for comparing houses?</li>
+    </ol>
+  </div>
+  <div class="hint">
+    <pre><code>fig2 = px.bar(
+    year_points,
+    x="year_level",
+    y="points",
+    color="house",
+    barmode="group",
+    color_discrete_map=house_colours,
+    title="Points by year level",
+    labels={"year_level": "Year level", "points": "Points", "house": "House"},
+)
+st.plotly_chart(fig2)</code></pre>
+  </div>
+  <div class="expect">
+    <p>Six groups of four coloured bars, one group for each of Years 7 to 12. Banksia wins most year levels, but Waratah wins Year 10 and Grevillea wins Year 12.</p>
+    <p>Without <code>barmode="group"</code>, the bars are <strong>stacked</strong> on top of each other, which shows each year level's total.</p>
+  </div>
+  <script type="text/x-python" class="solution">
+import streamlit as st
+import pandas as pd
+import plotly.express as px
+
+st.title("Athletics carnival results")
+
+df = pd.read_excel("data/athletics.xlsx")
+st.write("Results recorded:", len(df))
+st.dataframe(df, hide_index=True)
+
+house_colours = {
+    "Banksia": "orange",
+    "Grevillea": "royalblue",
+    "Waratah": "crimson",
+    "Wattle": "gold",
+}
+
+st.subheader("Points by house")
+house_points = df.groupby("house")["points"].sum().reset_index().sort_values("points", ascending=False)
+st.dataframe(house_points, hide_index=True)
+
+fig = px.bar(
+    house_points,
+    x="house",
+    y="points",
+    color="house",
+    color_discrete_map=house_colours,
+    title="Total points by house",
+    labels={"house": "House", "points": "Points"},
+    text="points",
+)
+st.plotly_chart(fig)
+
+st.subheader("Points by year level")
+year_points = df.groupby(["year_level", "house"])["points"].sum().reset_index()
+
+fig2 = px.bar(
+    year_points,
+    x="year_level",
+    y="points",
+    color="house",
+    barmode="group",
+    color_discrete_map=house_colours,
+    title="Points by year level",
+    labels={"year_level": "Year level", "points": "Points", "house": "House"},
+)
+st.plotly_chart(fig2)
+  </script>
+</article>
+
+<!-- ------------------------------------------------------------ step 5 -->
+<article class="step" data-title="Do older students run faster?">
+  <div class="story">
+    <p>Points only tell part of the story. Let's look at actual times in the 100m. First keep only the 100m rows, then draw a <strong>scatter plot</strong>: one dot per runner.</p>
+    <p><code>hover_name="competitor"</code> shows the runner's name when you hover over a dot.</p>
+  </div>
+  <div class="task">
+    <ol>
+      <li>Add a subheader <em>100m sprint</em>.</li>
+      <li>Make <code>sprint</code>, a DataFrame with only the rows where <code>event</code> is <code>"100m"</code>.</li>
+      <li>Draw <code>fig3</code>, a scatter plot of <code>sprint</code> with <code>x="year_level"</code>, <code>y="result"</code>, <code>color="house"</code> and <code>hover_name="competitor"</code>. Use the house colours, a title and labels (the result is a time in seconds).</li>
+      <li><strong>Challenge:</strong> make <code>fig4</code>, a <strong>box plot</strong> of the same data with <code>px.box(sprint, x="year_level", y="result")</code>. It shows the spread of times in each year level.</li>
+    </ol>
+  </div>
+  <div class="hint">
+    <pre><code>sprint = df[df["event"] == "100m"]
+
+fig3 = px.scatter(
+    sprint,
+    x="year_level",
+    y="result",
+    color="house",
+    hover_name="competitor",
+    color_discrete_map=house_colours,
+    title="100m times by year level",
+    labels={"year_level": "Year level", "result": "Time (seconds)", "house": "House"},
+)
+st.plotly_chart(fig3)</code></pre>
+    <p>The box plot needs only the table, <code>x</code> and <code>y</code>, but you can add a title and labels too.</p>
+  </div>
+  <div class="expect">
+    <p>A scatter plot with 8 dots above each year level. The dots get lower (faster times) for older students: the Year 7 times are around 14.5 to 15.5 seconds and the fastest Year 12 time is about 12.5 seconds.</p>
+    <p>In the box plot, each box covers the middle half of the times, with the median as a line across it.</p>
+  </div>
+  <script type="text/x-python" class="solution">
+import streamlit as st
+import pandas as pd
+import plotly.express as px
+
+st.title("Athletics carnival results")
+
+df = pd.read_excel("data/athletics.xlsx")
+st.write("Results recorded:", len(df))
+st.dataframe(df, hide_index=True)
+
+house_colours = {
+    "Banksia": "orange",
+    "Grevillea": "royalblue",
+    "Waratah": "crimson",
+    "Wattle": "gold",
+}
+
+st.subheader("Points by house")
+house_points = df.groupby("house")["points"].sum().reset_index().sort_values("points", ascending=False)
+st.dataframe(house_points, hide_index=True)
+
+fig = px.bar(
+    house_points,
+    x="house",
+    y="points",
+    color="house",
+    color_discrete_map=house_colours,
+    title="Total points by house",
+    labels={"house": "House", "points": "Points"},
+    text="points",
+)
+st.plotly_chart(fig)
+
+st.subheader("Points by year level")
+year_points = df.groupby(["year_level", "house"])["points"].sum().reset_index()
+
+fig2 = px.bar(
+    year_points,
+    x="year_level",
+    y="points",
+    color="house",
+    barmode="group",
+    color_discrete_map=house_colours,
+    title="Points by year level",
+    labels={"year_level": "Year level", "points": "Points", "house": "House"},
+)
+st.plotly_chart(fig2)
+
+st.subheader("100m sprint")
+sprint = df[df["event"] == "100m"]
+
+fig3 = px.scatter(
+    sprint,
+    x="year_level",
+    y="result",
+    color="house",
+    hover_name="competitor",
+    color_discrete_map=house_colours,
+    title="100m times by year level",
+    labels={"year_level": "Year level", "result": "Time (seconds)", "house": "House"},
+)
+st.plotly_chart(fig3)
+
+fig4 = px.box(
+    sprint,
+    x="year_level",
+    y="result",
+    title="Spread of 100m times",
+    labels={"year_level": "Year level", "result": "Time (seconds)"},
+)
+st.plotly_chart(fig4)
+  </script>
+</article>
+
+<!-- ------------------------------------------------------------ step 6 -->
+<article class="step" data-title="Organise it with tabs">
+  <div class="story">
+    <p>The app is getting long. <strong>Tabs</strong> let readers pick one section at a time. <code>st.tabs</code> takes a list of tab names and gives back one tab for each:</p>
+    <pre><code>tab1, tab2 = st.tabs(["Houses", "Year levels"])
+
+with tab1:
+    st.plotly_chart(fig)</code></pre>
+    <p>Everything <strong>indented</strong> under <code>with tab1:</code> appears inside that tab. Python uses 4 spaces for each level of indentation.</p>
+  </div>
+  <div class="task">
+    <ol>
+      <li>Create the four figures first, without showing them.</li>
+      <li>Make four tabs: <em>Houses</em>, <em>Year levels</em>, <em>100m</em> and <em>Data</em>.</li>
+      <li>Put each chart in its tab with <code>with</code>, and the full results table (<code>st.dataframe(df)</code>) in the <em>Data</em> tab.</li>
+      <li>Remove the old subheaders and <code>st.plotly_chart</code> lines so nothing appears twice.</li>
+    </ol>
+  </div>
+  <div class="hint">
+    <p>Keep all the code that <em>makes</em> <code>fig</code>, <code>fig2</code>, <code>fig3</code> and <code>fig4</code>. Then, at the end:</p>
+    <pre><code>tab1, tab2, tab3, tab4 = st.tabs(["Houses", "Year levels", "100m", "Data"])
+
+with tab1:
+    st.plotly_chart(fig)
+
+with tab2:
+    st.plotly_chart(fig2)
+
+with tab3:
+    st.plotly_chart(fig3)
+    st.plotly_chart(fig4)
+
+with tab4:
+    st.dataframe(df, hide_index=True)</code></pre>
+    <p>Indent with 4 spaces (or press <kbd>Tab</kbd>). If you get an <code>IndentationError</code>, check the lines under each <code>with</code>.</p>
+  </div>
+  <div class="expect">
+    <p>A row of four tabs under the title. Clicking each tab shows only its charts. The table is on the <em>Data</em> tab.</p>
+  </div>
+  <script type="text/x-python" class="solution">
+import streamlit as st
+import pandas as pd
+import plotly.express as px
+
+st.title("Athletics carnival results")
+
+df = pd.read_excel("data/athletics.xlsx")
+st.write("Results recorded:", len(df))
+
+house_colours = {
+    "Banksia": "orange",
+    "Grevillea": "royalblue",
+    "Waratah": "crimson",
+    "Wattle": "gold",
+}
+
+house_points = df.groupby("house")["points"].sum().reset_index().sort_values("points", ascending=False)
+fig = px.bar(
+    house_points,
+    x="house",
+    y="points",
+    color="house",
+    color_discrete_map=house_colours,
+    title="Total points by house",
+    labels={"house": "House", "points": "Points"},
+    text="points",
+)
+
+year_points = df.groupby(["year_level", "house"])["points"].sum().reset_index()
+fig2 = px.bar(
+    year_points,
+    x="year_level",
+    y="points",
+    color="house",
+    barmode="group",
+    color_discrete_map=house_colours,
+    title="Points by year level",
+    labels={"year_level": "Year level", "points": "Points", "house": "House"},
+)
+
+sprint = df[df["event"] == "100m"]
+fig3 = px.scatter(
+    sprint,
+    x="year_level",
+    y="result",
+    color="house",
+    hover_name="competitor",
+    color_discrete_map=house_colours,
+    title="100m times by year level",
+    labels={"year_level": "Year level", "result": "Time (seconds)", "house": "House"},
+)
+fig4 = px.box(
+    sprint,
+    x="year_level",
+    y="result",
+    title="Spread of 100m times",
+    labels={"year_level": "Year level", "result": "Time (seconds)"},
+)
+
+tab1, tab2, tab3, tab4 = st.tabs(["Houses", "Year levels", "100m", "Data"])
+
+with tab1:
+    st.plotly_chart(fig)
+
+with tab2:
+    st.plotly_chart(fig2)
+
+with tab3:
+    st.plotly_chart(fig3)
+    st.plotly_chart(fig4)
+
+with tab4:
+    st.dataframe(df, hide_index=True)
+  </script>
+</article>
+
+<section id="finish">
+  <p>Your app turns a spreadsheet into charts for the newsletter. You used:</p>
+  <ul>
+    <li><code>pd.read_excel</code> and <code>groupby</code> with one or two columns</li>
+    <li><code>px.bar</code>, <code>px.scatter</code> and <code>px.box</code>, with titles, labels and custom colours</li>
+    <li><code>st.plotly_chart</code> and <code>st.tabs</code></li>
+  </ul>
+  <p><strong>Extension:</strong> add a tab for a field event such as <code>"Long jump"</code>, where a bigger result is better.</p>
+  <p>Next, in exercise 3, you'll add controls so the reader can explore the data themselves.</p>
+</section>
+
+<noscript><p>This exercise needs JavaScript turned on.</p></noscript>
+<script type="module" src="../shared/engine.js"></script>
+</body>
+</html>

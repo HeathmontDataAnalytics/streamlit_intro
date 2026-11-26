@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Weather explorer · Streamlit beginnings</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@600&family=Public+Sans:wght@400;600&display=swap">
+<link rel="stylesheet" href="../shared/style.css">
+</head>
+<body>
+
+<script type="application/json" id="exercise">
+{
+  "id": "01-weather-explorer",
+  "number": 1,
+  "title": "Weather explorer",
+  "filename": "01_weather_explorer.py",
+  "datasets": [
+    {
+      "path": "data/weather.csv",
+      "url": "../data/weather.csv",
+      "columns": ["date", "city", "month", "max_temp", "min_temp", "rain_mm", "sunshine_hours"]
+    }
+  ]
+}
+</script>
+
+<section id="intro">
+  <p>The Geography department wants a simple web app for exploring a year of weather in four Australian cities. You'll build it with <strong>Streamlit</strong>, a Python library that turns a script into an interactive web page.</p>
+  <p>In this exercise you will:</p>
+  <ul>
+    <li>write your first Streamlit app</li>
+    <li>read a CSV file into a <strong>pandas DataFrame</strong> (a table of data)</li>
+    <li>explore it: its size, its columns and its summary statistics</li>
+    <li>sort and filter it to answer questions</li>
+  </ul>
+  <p>The data, <code>data/weather.csv</code>, has one row per city per day for 2025: 1,460 rows. It is <strong>simulated</strong>: it follows each city's typical climate but isn't a real weather record.</p>
+  <div class="note">
+    <p><strong>How it works:</strong> write code in the middle panel and press <strong>Run</strong> (or <kbd>Ctrl</kbd>+<kbd>Enter</kbd>). Your app appears on the right. Each step has a hint and a description of what you should see, so you can check your own work.</p>
+  </div>
+</section>
+
+<!-- ------------------------------------------------------------ step 1 -->
+<article class="step" data-title="Your first app">
+  <div class="story">
+    <p>A Streamlit app is just a Python script. Streamlit runs it from top to bottom, and every <code>st.</code> command adds something to the page.</p>
+    <p>The editor already contains a tiny app. Press <strong>Run</strong> to see it.</p>
+  </div>
+  <div class="task">
+    <ol>
+      <li>Change the title to <strong>Weather explorer</strong>.</li>
+      <li>Change the <code>st.write</code> line so it says what the app is for, for example <em>Explore a year of daily weather in four Australian cities.</em></li>
+      <li>Press <strong>Run</strong> to see the change.</li>
+    </ol>
+  </div>
+  <div class="hint">
+    <p>Text in Python goes inside quotes. Only change the words inside the quotes:</p>
+    <pre><code>st.title("Weather explorer")</code></pre>
+  </div>
+  <div class="expect">
+    <p>A large heading <strong>Weather explorer</strong> with your sentence underneath.</p>
+  </div>
+  <script type="text/x-python" class="start">
+import streamlit as st
+
+st.title("My first app")
+st.write("Hello!")
+  </script>
+  <script type="text/x-python" class="solution">
+import streamlit as st
+
+st.title("Weather explorer")
+st.write("Explore a year of daily weather in four Australian cities.")
+  </script>
+</article>
+
+<!-- ------------------------------------------------------------ step 2 -->
+<article class="step" data-title="Load the data">
+  <div class="story">
+    <p>To work with tables of data we use <strong>pandas</strong>. By tradition it's imported with the short name <code>pd</code>. <code>pd.read_csv()</code> reads a CSV file into a <strong>DataFrame</strong>, which we'll store in a variable called <code>df</code>.</p>
+  </div>
+  <div class="task">
+    <ol>
+      <li>Under <code>import streamlit as st</code>, add <code>import pandas as pd</code>.</li>
+      <li>At the bottom, read the file: <code>df = pd.read_csv("data/weather.csv")</code></li>
+      <li>Add a subheader that says <em>The data</em>, then show the table with <code>st.dataframe(df)</code>.</li>
+    </ol>
+  </div>
+  <div class="hint">
+    <p>Your code should end like this:</p>
+    <pre><code>df = pd.read_csv("data/weather.csv")
+
+st.subheader("The data")
+st.dataframe(df)</code></pre>
+    <p>The file path is in quotes, and the folder name <code>data/</code> is part of it.</p>
+  </div>
+  <div class="expect">
+    <p>An interactive table under the subheader <strong>The data</strong>, with the columns <code>date</code>, <code>city</code>, <code>month</code>, <code>max_temp</code>, <code>min_temp</code>, <code>rain_mm</code> and <code>sunshine_hours</code>.</p>
+    <p>Try it out: click a column heading to sort by that column, and scroll down to see more rows.</p>
+  </div>
+  <script type="text/x-python" class="solution">
+import streamlit as st
+import pandas as pd
+
+st.title("Weather explorer")
+st.write("Explore a year of daily weather in four Australian cities.")
+
+df = pd.read_csv("data/weather.csv")
+
+st.subheader("The data")
+st.dataframe(df)
+  </script>
+</article>
+
+<!-- ------------------------------------------------------------ step 3 -->
+<article class="step" data-title="How big is it?">
+  <div class="story">
+    <p>Before using a dataset, a data scientist checks its size, its column names and its typical values. pandas makes each of these one line:</p>
+    <ul>
+      <li><code>df.shape</code> gives the number of rows and the number of columns</li>
+      <li><code>df.columns.tolist()</code> gives a list of the column names</li>
+      <li><code>df.describe()</code> gives summary statistics (count, mean, min, max…) for each number column</li>
+    </ul>
+  </div>
+  <div class="task">
+    <ol>
+      <li>Store the size in two variables: <code>rows, columns = df.shape</code></li>
+      <li>Show them with <code>st.write("Rows:", rows)</code> and a similar line for <code>columns</code>.</li>
+      <li>Show the column names with <code>st.write("Column names:", df.columns.tolist())</code>.</li>
+      <li>Add a subheader <em>Summary statistics</em> and show <code>df.describe()</code> with <code>st.dataframe</code>.</li>
+    </ol>
+  </div>
+  <div class="hint">
+    <p><code>st.write</code> can take several things separated by commas and shows them side by side.</p>
+    <pre><code>rows, columns = df.shape
+st.write("Rows:", rows)
+st.write("Columns:", columns)</code></pre>
+    <p>For the summary: <code>st.dataframe(df.describe())</code></p>
+  </div>
+  <div class="expect">
+    <p><strong>Rows: 1460</strong> and <strong>Columns: 7</strong>, then the 7 column names, then a summary table with rows such as <code>count</code>, <code>mean</code>, <code>min</code> and <code>max</code> for <code>max_temp</code>, <code>min_temp</code>, <code>rain_mm</code> and <code>sunshine_hours</code>.</p>
+    <p>Check yourself: use the summary table to find the highest maximum temperature in the dataset. (It's 38 °C.)</p>
+  </div>
+  <script type="text/x-python" class="solution">
+import streamlit as st
+import pandas as pd
+
+st.title("Weather explorer")
+st.write("Explore a year of daily weather in four Australian cities.")
+
+df = pd.read_csv("data/weather.csv")
+
+st.subheader("The data")
+st.dataframe(df)
+
+rows, columns = df.shape
+st.write("Rows:", rows)
+st.write("Columns:", columns)
+st.write("Column names:", df.columns.tolist())
+
+st.subheader("Summary statistics")
+st.dataframe(df.describe())
+  </script>
+</article>
+
+<!-- ------------------------------------------------------------ step 4 -->
+<article class="step" data-title="The hottest days">
+  <div class="story">
+    <p>Which days were the hottest? <code>df.sort_values("max_temp", ascending=False)</code> sorts the table by <code>max_temp</code> from highest to lowest, and <code>.head(10)</code> keeps the first 10 rows. You can chain them together on one line.</p>
+  </div>
+  <div class="task">
+    <ol>
+      <li>Make a new DataFrame called <code>hottest</code> holding the 10 hottest days.</li>
+      <li>Add a subheader <em>The 10 hottest days</em> and show <code>hottest</code>. Add <code>hide_index=True</code> inside <code>st.dataframe(...)</code> to hide the row numbers on the left.</li>
+      <li><strong>Challenge:</strong> do the same for the 10 wettest days, using the <code>rain_mm</code> column.</li>
+    </ol>
+  </div>
+  <div class="hint">
+    <pre><code>hottest = df.sort_values("max_temp", ascending=False).head(10)
+
+st.subheader("The 10 hottest days")
+st.dataframe(hottest, hide_index=True)</code></pre>
+    <p>For the challenge, copy those three lines and change <code>hottest</code>, <code>"max_temp"</code> and the subheader.</p>
+  </div>
+  <div class="expect">
+    <p>A table of 10 rows, sorted so the hottest day is at the top. Most of the hottest days are in Perth and Brisbane in summer.</p>
+    <p>Your wettest-days table should be sorted by <code>rain_mm</code>, starting at over 60 mm.</p>
+  </div>
+  <script type="text/x-python" class="solution">
+import streamlit as st
+import pandas as pd
+
+st.title("Weather explorer")
+st.write("Explore a year of daily weather in four Australian cities.")
+
+df = pd.read_csv("data/weather.csv")
+
+st.subheader("The data")
+st.dataframe(df)
+
+rows, columns = df.shape
+st.write("Rows:", rows)
+st.write("Columns:", columns)
+st.write("Column names:", df.columns.tolist())
+
+st.subheader("Summary statistics")
+st.dataframe(df.describe())
+
+hottest = df.sort_values("max_temp", ascending=False).head(10)
+st.subheader("The 10 hottest days")
+st.dataframe(hottest, hide_index=True)
+
+wettest = df.sort_values("rain_mm", ascending=False).head(10)
+st.subheader("The 10 wettest days")
+st.dataframe(wettest, hide_index=True)
+  </script>
+</article>
+
+<!-- ------------------------------------------------------------ step 5 -->
+<article class="step" data-title="Focus on one city">
+  <div class="story">
+    <p>To keep only some rows, put a <strong>condition</strong> inside square brackets:</p>
+    <pre><code>melbourne = df[df["city"] == "Melbourne"]</code></pre>
+    <p>Read it as: <em>keep the rows of <code>df</code> where the city column equals "Melbourne"</em>. Note the double equals sign <code>==</code>, which compares two values.</p>
+    <p>A column has handy methods such as <code>.mean()</code>, <code>.max()</code> and <code>.sum()</code>. <code>st.metric</code> shows a single number in large type.</p>
+  </div>
+  <div class="task">
+    <ol>
+      <li>Make a DataFrame <code>melbourne</code> with only Melbourne's rows.</li>
+      <li>Add a subheader <em>Melbourne</em>.</li>
+      <li>Show the average maximum temperature, rounded to 1 decimal place:<br><code>st.metric("Average max temp (°C)", round(melbourne["max_temp"].mean(), 1))</code></li>
+      <li>Add a second metric for the total rainfall in mm (use <code>.sum()</code>).</li>
+      <li><strong>Challenge:</strong> change the city to Sydney, Brisbane or Perth. What do you have to change?</li>
+    </ol>
+  </div>
+  <div class="hint">
+    <pre><code>melbourne = df[df["city"] == "Melbourne"]
+
+st.subheader("Melbourne")
+st.metric("Average max temp (°C)", round(melbourne["max_temp"].mean(), 1))
+st.metric("Total rain (mm)", round(melbourne["rain_mm"].sum(), 1))</code></pre>
+    <p>City names start with a capital letter, exactly as in the data: <code>"Melbourne"</code>, not <code>"melbourne"</code>.</p>
+  </div>
+  <div class="expect">
+    <p>Two big numbers under <strong>Melbourne</strong>: an average maximum temperature of about <strong>19.4</strong> °C and a total rainfall of about <strong>605</strong> mm.</p>
+    <p>If your numbers are 0 or blank, check the spelling of the city.</p>
+  </div>
+  <script type="text/x-python" class="solution">
+import streamlit as st
+import pandas as pd
+
+st.title("Weather explorer")
+st.write("Explore a year of daily weather in four Australian cities.")
+
+df = pd.read_csv("data/weather.csv")
+
+st.subheader("The data")
+st.dataframe(df)
+
+rows, columns = df.shape
+st.write("Rows:", rows)
+st.write("Columns:", columns)
+st.write("Column names:", df.columns.tolist())
+
+st.subheader("Summary statistics")
+st.dataframe(df.describe())
+
+hottest = df.sort_values("max_temp", ascending=False).head(10)
+st.subheader("The 10 hottest days")
+st.dataframe(hottest, hide_index=True)
+
+wettest = df.sort_values("rain_mm", ascending=False).head(10)
+st.subheader("The 10 wettest days")
+st.dataframe(wettest, hide_index=True)
+
+melbourne = df[df["city"] == "Melbourne"]
+st.subheader("Melbourne")
+st.metric("Average max temp (°C)", round(melbourne["max_temp"].mean(), 1))
+st.metric("Total rain (mm)", round(melbourne["rain_mm"].sum(), 1))
+  </script>
+</article>
+
+<!-- ------------------------------------------------------------ step 6 -->
+<article class="step" data-title="Compare all four cities">
+  <div class="story">
+    <p>Doing that once for each city would be slow. <code>groupby</code> does it for every city at once: it splits the table into one group per city and works out a value for each group.</p>
+    <pre><code>df.groupby("city")["rain_mm"].sum()</code></pre>
+    <p>Read it as: <em>group the rows by city, take the rain_mm column, and add it up for each group</em>.</p>
+  </div>
+  <div class="task">
+    <ol>
+      <li>Add a subheader <em>All four cities</em>.</li>
+      <li>Make a table of the <strong>average</strong> of the four number columns for each city, rounded to 1 decimal place, and show it:
+        <pre><code>averages = df.groupby("city")[["max_temp", "min_temp", "rain_mm", "sunshine_hours"]].mean().round(1)</code></pre>
+        (The double square brackets pick several columns at once.)</li>
+      <li>Work out each city's total rain with <code>.sum()</code> and store it in <code>total_rain</code>.</li>
+      <li>Find the wettest city with <code>total_rain.idxmax()</code>, which gives the name with the biggest value, and show it with <code>st.write</code>.</li>
+    </ol>
+  </div>
+  <div class="hint">
+    <pre><code>st.subheader("All four cities")
+averages = df.groupby("city")[["max_temp", "min_temp", "rain_mm", "sunshine_hours"]].mean().round(1)
+st.dataframe(averages)
+
+total_rain = df.groupby("city")["rain_mm"].sum()
+st.write("The wettest city was", total_rain.idxmax())</code></pre>
+  </div>
+  <div class="expect">
+    <p>A table with one row for each city (Brisbane, Melbourne, Perth, Sydney) and the average of each column. Brisbane has the highest average maximum temperature.</p>
+    <p>Then the sentence <strong>The wettest city was Sydney</strong>.</p>
+  </div>
+  <script type="text/x-python" class="solution">
+import streamlit as st
+import pandas as pd
+
+st.title("Weather explorer")
+st.write("Explore a year of daily weather in four Australian cities.")
+
+df = pd.read_csv("data/weather.csv")
+
+st.subheader("The data")
+st.dataframe(df)
+
+rows, columns = df.shape
+st.write("Rows:", rows)
+st.write("Columns:", columns)
+st.write("Column names:", df.columns.tolist())
+
+st.subheader("Summary statistics")
+st.dataframe(df.describe())
+
+hottest = df.sort_values("max_temp", ascending=False).head(10)
+st.subheader("The 10 hottest days")
+st.dataframe(hottest, hide_index=True)
+
+wettest = df.sort_values("rain_mm", ascending=False).head(10)
+st.subheader("The 10 wettest days")
+st.dataframe(wettest, hide_index=True)
+
+melbourne = df[df["city"] == "Melbourne"]
+st.subheader("Melbourne")
+st.metric("Average max temp (°C)", round(melbourne["max_temp"].mean(), 1))
+st.metric("Total rain (mm)", round(melbourne["rain_mm"].sum(), 1))
+
+st.subheader("All four cities")
+averages = df.groupby("city")[["max_temp", "min_temp", "rain_mm", "sunshine_hours"]].mean().round(1)
+st.dataframe(averages)
+
+total_rain = df.groupby("city")["rain_mm"].sum()
+st.write("The wettest city was", total_rain.idxmax())
+  </script>
+</article>
+
+<section id="finish">
+  <p>You've built a Streamlit app that loads a CSV file and answers questions about it. Along the way you used:</p>
+  <ul>
+    <li><code>st.title</code>, <code>st.subheader</code>, <code>st.write</code>, <code>st.dataframe</code> and <code>st.metric</code></li>
+    <li><code>pd.read_csv</code>, <code>df.shape</code>, <code>df.describe()</code> and <code>sort_values</code></li>
+    <li>filtering with <code>df[df["city"] == "Melbourne"]</code>, and <code>groupby</code></li>
+  </ul>
+  <p>Next, in exercise 2, you'll turn data into charts with Plotly.</p>
+</section>
+
+<noscript><p>This exercise needs JavaScript turned on.</p></noscript>
+<script type="module" src="../shared/engine.js"></script>
+</body>
+</html>

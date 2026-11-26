@@ -415,7 +415,14 @@ body.exercise { overflow: hidden; }
   margin: 0 0 14px;
   background: var(--bg);
 }
-.hint[open] summary { margin-bottom: .6em; }
+.hint[open] > summary { margin-bottom: .6em; }
+.hint-more {
+  margin-top: .8em;
+  padding-top: .7em;
+  border-top: 1px dashed var(--line);
+}
+.hint-more[open] > summary { margin-bottom: .6em; }
+.hint-more > :last-child { margin-bottom: 0; }
 .hint > :last-child { margin-bottom: 0; }
 .step-actions { margin: 0 0 18px; }
 .step-nav {

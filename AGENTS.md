@@ -37,7 +37,10 @@ builds the three-pane workspace (steps | editor | app).
 <article class="step" data-title="Load the data">
   <div class="story">...</div>        <!-- context and new ideas -->
   <div class="task">...</div>         <!-- shown in a "Your task" box -->
-  <div class="hint">...</div>         <!-- hidden behind "Show a hint" -->
+  <div class="hint">                  <!-- two levels, see "Hints" below -->
+    <div class="hint-recall">...</div>  <!-- behind "Show a hint" -->
+    <div class="hint-blanks">...</div>  <!-- behind "Still stuck? Show the code with blanks" -->
+  </div>
   <div class="expect">...</div>       <!-- "What you should see": concrete, checkable -->
   <script type="text/x-python" class="start">...</script>     <!-- optional -->
   <script type="text/x-python" class="solution">...</script>  <!-- required -->
@@ -59,6 +62,23 @@ builds the three-pane workspace (steps | editor | app).
   no HTML escaping. In ordinary HTML (hints, stories), escape `<`, `>` and `&`.
 - Numbers quoted in `expect` must come from the real data. Re-check them if a
   dataset changes.
+
+### Hints
+
+Hints never show the whole answer. They come in two levels:
+
+1. **`hint-recall`:** a short "Remember:" list of the functions, parameter names and
+   syntax the step needs, especially ones from earlier exercises. Name them; don't
+   assemble them into the answer.
+2. **`hint-blanks`:** the new code with the key parts replaced by `____` (four
+   underscores): function names, column names, argument values and keywords such
+   as `else`. Keep the section comments. Leave out lines the student already has,
+   or show them unchanged for context. Put plain `<p>` notes between code blocks
+   if needed. The engine adds the "Replace each `____`" instruction.
+
+Every line in a blanks block must match a line of that step's solution, with each
+`____` standing for any text. Check this after editing. If a student runs code
+with a `____` left in, the engine gives a "There's still a blank" hint.
 
 ## Rules for student-facing code
 

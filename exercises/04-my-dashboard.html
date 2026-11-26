@@ -57,19 +57,29 @@
     </ol>
   </div>
   <div class="hint">
-    <pre><code># Ask for a file; this is None until one is uploaded
-uploaded = st.file_uploader("Choose a CSV file", type=["csv"])
+    <div class="hint-recall">
+      <p>Remember:</p>
+      <ul>
+        <li><code>st.file_uploader()</code> takes a label and <code>type=</code>, a list of file endings.</li>
+        <li>Check for "nothing" with <code>is None</code>.</li>
+        <li><code>st.info()</code> shows a blue message and <code>st.stop()</code> ends the script there.</li>
+        <li><code>pd.read_csv()</code> can read the uploaded file directly, and <code>uploaded.name</code> is its file name.</li>
+      </ul>
+    </div>
+    <div class="hint-blanks">
+      <pre><code># Ask for a file; this is None until one is uploaded
+uploaded = st.file_uploader("Choose a CSV file", type=["____"])
 
 # Nothing to show yet, so stop the script here
-if uploaded is None:
+if uploaded is ____:
     st.info("Upload a file to get started.")
-    st.stop()
+    st.____()
 
 # Read the uploaded file into a DataFrame
-df = pd.read_csv(uploaded)
-st.write("File:", uploaded.name)
+df = pd.read_csv(____)
+st.write("File:", uploaded.____)
 st.dataframe(df)</code></pre>
-    <p>Use <code>is None</code> to check for <code>None</code>.</p>
+    </div>
   </div>
   <div class="expect">
     <p>Before you upload: an upload box and a blue message, <strong>Upload a file to get started.</strong></p>
@@ -123,18 +133,31 @@ st.dataframe(df)
     </ol>
   </div>
   <div class="hint">
-    <pre><code># Read Excel or CSV, depending on the file's name
-if uploaded.name.endswith(".xlsx"):
-    df = pd.read_excel(uploaded)
-else:
+    <div class="hint-recall">
+      <p>Remember:</p>
+      <ul>
+        <li>The uploader's <code>type=</code> list needs both endings: <code>"csv"</code> and <code>"xlsx"</code>.</li>
+        <li><code>.endswith(".xlsx")</code> checks how some text ends. <code>pd.read_excel()</code> from exercise 2 reads Excel files.</li>
+        <li>An <code>else:</code> line lines up with its <code>if</code>, and both end with a colon.</li>
+        <li><code>st.columns(3)</code> and <code>col1.metric()</code> from exercise 3 make the overview row. <code>len(df.columns)</code> counts the columns.</li>
+      </ul>
+      <p>Because the uploader changed, you'll need to upload your file again after you press Run.</p>
+    </div>
+    <div class="hint-blanks">
+      <pre><code># Read Excel or CSV, depending on the file's name
+if uploaded.name.____(".xlsx"):
+    df = pd.____(uploaded)
+____:
     df = pd.read_csv(uploaded)
+
+st.write("File:", uploaded.name)
 
 # Overview: rows, columns and empty cells
 col1, col2, col3 = st.columns(3)
-col1.metric("Rows", len(df))
-col2.metric("Columns", len(df.columns))
+col1.metric("Rows", ____(df))
+col2.metric("Columns", len(df.____))
 col3.metric("Missing values", int(df.isna().sum().sum()))</code></pre>
-    <p>Because the uploader changed, you'll need to upload your file again after you press Run.</p>
+    </div>
   </div>
   <div class="expect">
     <p>Upload <code>athletics.xlsx</code>: <strong>288</strong> rows, <strong>9</strong> columns, <strong>0</strong> missing values.</p>
@@ -195,26 +218,37 @@ st.dataframe(df)
     </ol>
   </div>
   <div class="hint">
-    <pre><code># Only number columns can go on the y axis
+    <div class="hint-recall">
+      <p>Remember:</p>
+      <ul>
+        <li><code>.columns.tolist()</code> turns column names into a list for a selectbox.</li>
+        <li><code>st.radio()</code> takes a label, a list of options and <code>horizontal=True</code>.</li>
+        <li><code>elif</code> means "else if". Each <code>if</code>, <code>elif</code> and <code>else</code> line ends with a colon.</li>
+        <li>The three chart functions are <code>px.scatter</code>, <code>px.line</code> and <code>px.bar</code>.</li>
+      </ul>
+    </div>
+    <div class="hint-blanks">
+      <pre><code># Only number columns can go on the y axis
 number_columns = df.select_dtypes("number").columns.tolist()
-if len(number_columns) == 0:
+if len(number_columns) == ____:
     st.warning("This file has no number columns to plot.")
     st.stop()
 
 # Chart settings, built from the file's own columns
-x_col = st.selectbox("X axis", df.columns.tolist())
-y_col = st.selectbox("Y axis", number_columns)
-chart_type = st.radio("Chart type", ["Scatter", "Line", "Bar"], horizontal=True)
+x_col = st.selectbox("X axis", df.columns.____())
+y_col = st.selectbox("Y axis", ____)
+chart_type = st.radio("Chart type", ["Scatter", "Line", "Bar"], horizontal=____)
 
 # Draw the chosen kind of chart
-if chart_type == "Scatter":
+if chart_type == "____":
     fig = px.scatter(df, x=x_col, y=y_col)
-elif chart_type == "Line":
-    fig = px.line(df, x=x_col, y=y_col)
+____ chart_type == "Line":
+    fig = px.____(df, x=x_col, y=y_col)
 else:
-    fig = px.bar(df, x=x_col, y=y_col)
+    fig = px.bar(df, x=____, y=____)
 
 st.plotly_chart(fig)</code></pre>
+    </div>
   </div>
   <div class="expect">
     <p>With <code>weather.csv</code>: the x axis starts on <code>date</code> and the y axis on <code>max_temp</code>, so you see a year of temperatures, warm at the start and end of the year and cool in the middle.</p>
@@ -297,27 +331,38 @@ st.plotly_chart(fig)
     </ol>
   </div>
   <div class="hint">
-    <pre><code># Chart settings, built from the file's own columns
+    <div class="hint-recall">
+      <p>Remember:</p>
+      <ul>
+        <li>Two lists join with <code>+</code>, so <code>["(none)"] + df.columns.tolist()</code> puts <em>(none)</em> first.</li>
+        <li><code>None</code> (no quotes) means "nothing". Giving Plotly <code>color=None</code> means no colour.</li>
+        <li><code>groupby(...)[...].mean().reset_index()</code> works like the <code>groupby</code> in exercise 2, but with the variables <code>x_col</code> and <code>y_col</code> instead of column names in quotes.</li>
+        <li>Add <code>color=</code> and <code>title=</code> to each of the three chart functions.</li>
+      </ul>
+    </div>
+    <div class="hint-blanks">
+      <pre><code># Chart settings, built from the file's own columns
 colour_choice = st.selectbox("Colour by", ["(none)"] + df.columns.tolist())
-average = st.checkbox("Average the y values for each x value")
+average = st.checkbox("____")
 
 # No colour, or colour by the chosen column
-if colour_choice == "(none)":
-    colour = None
+if colour_choice == "____":
+    colour = ____
 else:
-    colour = colour_choice
+    colour = ____
 
 # Average the y values for each x value, if ticked
 plot_df = df
 if average and x_col != y_col:
-    plot_df = df.groupby(x_col)[y_col].mean().reset_index()
+    plot_df = df.groupby(____)[____].mean().reset_index()
     colour = None
 
 # Draw the chosen kind of chart
 title = f"{y_col} by {x_col}"
 if chart_type == "Scatter":
-    fig = px.scatter(plot_df, x=x_col, y=y_col, color=colour, title=title)</code></pre>
-    <p>Do the same for <code>px.line</code> and <code>px.bar</code>. (<code>x_col != y_col</code> skips averaging if you picked the same column twice, which pandas can't do.)</p>
+    fig = px.scatter(____, x=x_col, y=y_col, color=____, title=____)</code></pre>
+      <p>Do the same for <code>px.line</code> and <code>px.bar</code>. (<code>x_col != y_col</code> skips averaging if you picked the same column twice, which pandas can't do.)</p>
+    </div>
   </div>
   <div class="expect">
     <p>With <code>weather.csv</code>, choose <strong>Line</strong> and colour by <strong>city</strong>: four smooth lines, one per city.</p>
@@ -411,22 +456,30 @@ st.plotly_chart(fig)
     </ol>
   </div>
   <div class="hint">
-    <pre><code># Chart settings in the sidebar
+    <div class="hint-recall">
+      <p>Remember:</p>
+      <ul>
+        <li><code>with st.sidebar:</code> from exercise 3: indent everything inside it by 4 spaces.</li>
+        <li><code>st.tabs()</code> from exercise 2 takes a list of names and gives back one tab for each.</li>
+        <li><code>df.describe()</code> from exercise 1 makes the summary table.</li>
+      </ul>
+    </div>
+    <div class="hint-blanks">
+      <pre><code># Chart settings in the sidebar
 with st.sidebar:
-    st.header("Chart settings")
+    st.header("____")
     x_col = st.selectbox("X axis", df.columns.tolist())
-    # ...the other four settings, indented the same way...
-
-# ...work out colour, plot_df and fig as before...
+    # ...your other four settings, indented the same way...
 
 # Chart, data and summary in separate tabs
-tab1, tab2, tab3 = st.tabs(["Chart", "Data", "Summary"])
+tab1, tab2, tab3 = st.tabs(["Chart", "____", "____"])
 with tab1:
-    st.plotly_chart(fig)
+    st.plotly_chart(____)
 with tab2:
-    st.dataframe(df)
+    st.dataframe(____)
 with tab3:
-    st.dataframe(df.describe())</code></pre>
+    st.dataframe(df.____())</code></pre>
+    </div>
   </div>
   <div class="expect">
     <p>The upload box and the three metrics at the top, then three tabs. The chart settings are in the sidebar, and changing them updates the chart.</p>

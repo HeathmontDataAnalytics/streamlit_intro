@@ -485,8 +485,10 @@ function renderNewIn(newIn, v) {
     return CONCEPTS[id];
   });
   const box = el("section", { class: "new-in-step", "aria-labelledby": `new-${v}` },
-    el("h3", { id: `new-${v}` }, "New in this step"),
-    known.map((id) => conceptCard(id, { open: first, why: newIn.why[id] })),
+    el("h3", { id: `new-${v}` }, known.length ? "New in this step" : "Nothing new in this step"),
+    known.length
+      ? known.map((id) => conceptCard(id, { open: first, why: newIn.why[id] }))
+      : el("p", {}, "This step puts together things you've already used."),
   );
   const review = newIn.review.filter((id) => CONCEPTS[id]);
   if (review.length) {

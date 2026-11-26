@@ -57,17 +57,19 @@
     <li>lay out the app with a sidebar and columns</li>
   </ul>
   <div class="note">
-    <p><strong>The big idea:</strong> every time someone changes a widget, Streamlit runs your whole script again from the top. This time, the widget gives back the new value. So you write a widget like a normal variable: <code>chosen_type = st.selectbox(...)</code>.</p>
+    <p><strong>The big idea:</strong> every time someone changes a widget, Streamlit runs your whole script again from the top. Step 1 explains how this works.</p>
   </div>
 </section>
 
 <!-- ------------------------------------------------------------ step 1 -->
 <article class="step" data-title="A checkbox">
   <div class="story">
-    <p>The table is long, so let's hide it unless the user asks for it. <code>st.checkbox("label")</code> draws a checkbox and gives back <code>True</code> when it's ticked and <code>False</code> when it isn't.</p>
-    <p>An <code>if</code> statement runs the indented lines under it only when its condition is <code>True</code>:</p>
-    <pre><code>if show_data:
-    st.dataframe(df)</code></pre>
+    <p>The table is long, so let's hide it unless the user asks for it. That needs your first widget, and a way to run some code only some of the time.</p>
+  </div>
+  <div class="new-in-step" data-items="reruns st.checkbox if">
+    <div class="why" data-item="reruns"><p>Ticking the box reruns your script, and this time the checkbox gives back <code>True</code>.</p></div>
+    <div class="why" data-item="st.checkbox"><p>A box labelled <em>Show all the data</em>.</p></div>
+    <div class="why" data-item="if"><p>Show the table only when the box is ticked.</p></div>
   </div>
   <div class="task">
     <ol>

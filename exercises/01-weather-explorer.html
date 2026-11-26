@@ -65,10 +65,12 @@
 <article class="step" data-title="Your first app">
   <div class="story">
     <p>A Streamlit app is just a Python script. Streamlit runs it from top to bottom, and every <code>st.</code> command adds something to the page.</p>
-    <p>The editor already contains a tiny app. Press <strong>Run</strong> to see it.</p>
-    <p>Lines that start with <code>#</code> are <strong>comments</strong>. Python ignores them: they're notes for people reading the code, including you next week. A good comment sits above a section of code and says what that section does, in a few plain words:</p>
-    <pre><code># A big title, then a line of text</code></pre>
-    <p>From now on, add a short comment like this above each new section you write.</p>
+    <p>The editor already contains a tiny app. Press <strong>Run</strong> to see it, then read below about each part of it.</p>
+  </div>
+  <div class="new-in-step" data-items="st.title st.write comments">
+    <div class="why" data-item="st.title"><p>Your app's name, <em>Weather explorer</em>, goes here.</p></div>
+    <div class="why" data-item="st.write"><p>A sentence under the title saying what the app is for.</p></div>
+    <div class="why" data-item="comments"><p>The starting code already has two. From now on, add one above each new section you write.</p></div>
   </div>
   <div class="task">
     <ol>
@@ -393,9 +395,11 @@ st.metric("Total rain (mm)", round(melbourne["rain_mm"].sum(), 1))
 <!-- ------------------------------------------------------------ step 6 -->
 <article class="step" data-title="Compare all four cities">
   <div class="story">
-    <p>Doing that once for each city would be slow. <code>groupby</code> does it for every city at once: it splits the table into one group per city and works out a value for each group.</p>
-    <pre><code>df.groupby("city")["rain_mm"].sum()</code></pre>
-    <p>Read it as: <em>group the rows by city, take the rain_mm column, and add it up for each group</em>.</p>
+    <p>Working out the same numbers for each of the four cities one at a time would be slow. pandas can do it for every city at once.</p>
+  </div>
+  <div class="new-in-step" data-items="groupby idxmax">
+    <div class="why" data-item="groupby"><p>Group the rows by <code>city</code> to get one average, or one total, for each of the four cities.</p></div>
+    <div class="why" data-item="idxmax"><p>Find which city had the most rain in total.</p></div>
   </div>
   <div class="task">
     <ol>

@@ -124,16 +124,18 @@ st.dataframe(df, hide_index=True)
 <!-- ------------------------------------------------------------ step 2 -->
 <article class="step" data-title="Your first Plotly chart">
   <div class="story">
-    <p>Which house is winning? First add up each house's points with <code>groupby</code>:</p>
-    <pre><code>house_points = df.groupby("house")["points"].sum().reset_index()</code></pre>
-    <p><code>.reset_index()</code> turns the result back into an ordinary table with two columns, <code>house</code> and <code>points</code>. That's the shape Plotly likes.</p>
-    <p><strong>Plotly Express</strong> (imported as <code>px</code>) makes a chart in one line. You say which table to use and which columns go on the x and y axes. <code>st.plotly_chart()</code> puts the chart on the page.</p>
+    <p>Which house is winning? Add up each house's points with <code>groupby</code>, as in exercise 1, then draw the totals as a bar chart.</p>
+  </div>
+  <div class="new-in-step" data-items="reset_index px.bar st.plotly_chart" data-review="groupby">
+    <div class="why" data-item="reset_index"><p>Plotly needs the house names in a column, so add <code>.reset_index()</code> to the end of your <code>groupby</code> line.</p></div>
+    <div class="why" data-item="px.bar"><p>One bar for each house, with its total points as the height.</p></div>
+    <div class="why" data-item="st.plotly_chart"><p>Shows your bar chart under the table.</p></div>
   </div>
   <div class="task">
     <ol>
       <li>Add <code>import plotly.express as px</code> to the imports at the top.</li>
       <li>Add a subheader <em>Points by house</em>.</li>
-      <li>Make <code>house_points</code> as above and show it with <code>st.dataframe</code>.</li>
+      <li>Make <code>house_points</code>: group the rows by <code>house</code>, add up the <code>points</code>, and finish with <code>.reset_index()</code>. Show it with <code>st.dataframe</code>.</li>
       <li>Make a bar chart: <code>fig = px.bar(house_points, x="house", y="points")</code>, then show it with <code>st.plotly_chart(fig)</code>.</li>
     </ol>
   </div>

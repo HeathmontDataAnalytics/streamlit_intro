@@ -13,6 +13,7 @@ const STLITE_BASE = `https://cdn.jsdelivr.net/npm/@stlite/browser@${STLITE_VERSI
 const REQUIREMENTS = ["pandas", "plotly", "openpyxl"];
 const PIP_LINE = "pip install streamlit pandas plotly openpyxl";
 const STORAGE_PREFIX = "streamlit-beginnings:";
+const SETTINGS_KEY = STORAGE_PREFIX + "settings"; // shared by all exercises
 
 // The first app stlite runs. It is never shown to students as code: it says
 // Python is ready and imports the heavy packages so the first real run is quick.
@@ -127,6 +128,24 @@ function makeStore(id) {
   };
 }
 
+// Page-wide settings (such as suggestions on/off), shared by every exercise.
+function loadSettings() {
+  try {
+    const data = JSON.parse(window.localStorage.getItem(SETTINGS_KEY));
+    return data && typeof data === "object" ? data : {};
+  } catch {
+    return {};
+  }
+}
+
+function saveSetting(name, value) {
+  try {
+    window.localStorage.setItem(SETTINGS_KEY, JSON.stringify({ ...loadSettings(), [name]: value }));
+  } catch {
+    /* storage blocked: the setting just isn't remembered */
+  }
+}
+
 // --------------------------------------------------------------- content ---
 
 function readExercise() {
@@ -207,9 +226,17 @@ function buildLayout() {
   const editorPane = el("section", { class: "pane pane-editor", "aria-label": "Code editor" },
     el("div", { class: "pane-head" }, el("h2", {}, "Your code"), ui.runBtn, ui.resetBtn, ui.downloadBtn),
     el("div", { class: "pane-body" }, ui.editorHost),
-    el("p", { class: "editor-foot", id: "editor-help" },
-      el("kbd", {}, "Ctrl"), "+", el("kbd", {}, "Enter"), " runs your code. ",
-      el("kbd", {}, "Tab"), " indents; press ", el("kbd", {}, "Esc"), " then ", el("kbd", {}, "Tab"), " to leave the editor."),
+    el("div", { class: "editor-foot" },
+      el("p", { id: "editor-help" },
+        el("kbd", {}, "Ctrl"), "+", el("kbd", {}, "Enter"), " runs your code. ",
+        el("kbd", {}, "Tab"), " indents; press ", el("kbd", {}, "Esc"), " then ", el("kbd", {}, "Tab"), " to leave the editor."),
+      ui.suggestLabel = el("label", { class: "suggest-toggle", hidden: true },
+        ui.suggestBox = el("input", { type: "checkbox", "aria-describedby": "suggest-help" }),
+        " Suggestions",
+        el("span", { id: "suggest-help", class: "visually-hidden" },
+          "When on, the editor suggests Streamlit, pandas and Plotly functions and column names as you type. Use the down arrow to choose one, then Enter or Tab."),
+      ),
+    ),
   );
 
   // App pane
@@ -251,6 +278,7 @@ function buildExtras() {
       files.length
         ? el("p", {}, "Download .py saves your code as a normal Streamlit file. To run it on your own computer, put it in a folder together with a ", el("code", {}, "data"), " folder holding ", files.map((f, i) => [i ? " and " : "", el("code", {}, f)]), ", then follow the instructions at the top of the file.")
         : el("p", {}, "Download .py saves your code as a normal Streamlit file. To run it on your own computer, follow the instructions at the top of the file."),
+      el("p", {}, "As you type, the editor suggests Streamlit, pandas and Plotly functions (after ", el("code", {}, "st."), ", ", el("code", {}, "pd."), ", ", el("code", {}, "px."), " or a table's name) and column names (inside quotes). Press the down arrow to choose one, then Enter or Tab. If the suggestions get in the way, untick Suggestions under the editor."),
       el("p", {}, "If the app freezes (for example, because of a loop that never ends), press Stop / restart Python. Your code is kept."),
     ),
     el("p", { class: "muted" },
@@ -477,13 +505,19 @@ function makeTextarea(initial) {
 
 async function upgradeToCodeMirror() {
   let cm;
+  let completions = null;
   try {
     cm = await import("./vendor/codemirror.js");
   } catch (err) {
     console.warn("CodeMirror failed to load; using the plain text editor.", err);
     return;
   }
-  const { EditorView, EditorState, basicSetup, keymap, indentWithTab, python, HighlightStyle, syntaxHighlighting, indentUnit, tags: t } = cm;
+  try {
+    completions = await import("./completions.js");
+  } catch (err) {
+    console.warn("Suggestions failed to load.", err);
+  }
+  const { EditorView, EditorState, Compartment, basicSetup, keymap, indentWithTab, python, HighlightStyle, syntaxHighlighting, indentUnit, autocompletion, acceptCompletion, tags: t } = cm;
   const value = editor.getValue();
   const hadFocus = ui.editorHost.contains(document.activeElement);
 
@@ -500,7 +534,20 @@ async function upgradeToCodeMirror() {
     ".cm-tooltip": { backgroundColor: "var(--panel)", color: "var(--text)", border: "1px solid var(--line)" },
     ".cm-panels": { backgroundColor: "var(--panel)", color: "var(--text)" },
     ".cm-errorLine": { backgroundColor: "var(--errbg)" },
+    ".cm-tooltip-autocomplete ul li[aria-selected]": { backgroundColor: "var(--accent)", color: "var(--accent-text)" },
+    ".cm-completionDetail": { fontStyle: "normal", opacity: "0.75", marginLeft: "0.8em" },
+    ".cm-completionInfo": { maxWidth: "260px", whiteSpace: "normal" },
   });
+
+  // Suggestions: our own list only (no Python built-ins), shown after "st.",
+  // "pd.", "px.", a table or a column, and column names inside quotes. Nothing
+  // is pre-selected, so Enter still makes a new line unless the student has
+  // arrowed into the list. A checkbox under the editor turns them off.
+  const suggestions = new Compartment();
+  const source = completions?.makeCompletionSource(() => cfg.datasets.flatMap((d) => d.columns || []));
+  const suggestionsOn = () => autocompletion({ override: [source], selectOnOpen: false, icons: false });
+  const suggestionsOff = () => autocompletion({ override: [() => null], activateOnTyping: false });
+  const wantSuggestions = () => !!source && loadSettings().suggestions !== false;
   const highlight = HighlightStyle.define([
     { tag: [t.keyword, t.controlKeyword, t.moduleKeyword, t.operatorKeyword, t.definitionKeyword], color: "var(--syn-keyword)", fontWeight: "600" },
     { tag: [t.string, t.special(t.string)], color: "var(--syn-string)" },
@@ -516,8 +563,12 @@ async function upgradeToCodeMirror() {
     state: EditorState.create({
       doc: value,
       extensions: [
-        keymap.of([{ key: "Mod-Enter", run: () => { run(); return true; } }]),
+        keymap.of([
+          { key: "Mod-Enter", run: () => { run(); return true; } },
+          { key: "Tab", run: acceptCompletion }, // only when a suggestion is selected
+        ]),
         basicSetup,
+        suggestions.of(wantSuggestions() ? suggestionsOn() : suggestionsOff()),
         keymap.of([indentWithTab]),
         indentUnit.of("    "),
         EditorState.tabSize.of(4),
@@ -541,6 +592,14 @@ async function upgradeToCodeMirror() {
       view.focus();
     },
   };
+  if (source) {
+    ui.suggestBox.checked = wantSuggestions();
+    ui.suggestLabel.hidden = false;
+    ui.suggestBox.addEventListener("change", () => {
+      saveSetting("suggestions", ui.suggestBox.checked);
+      view.dispatch({ effects: suggestions.reconfigure(ui.suggestBox.checked ? suggestionsOn() : suggestionsOff()) });
+    });
+  }
   if (hadFocus) view.focus();
 }
 

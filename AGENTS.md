@@ -7,7 +7,7 @@ as static files on GitHub Pages. No server, no install, no accounts.
 
 ## Repo layout
 
-```
+```text
 index.html                     landing page: one card per exercise, reads saved progress
 exercises/NN-name.html         one page per exercise: content only (see below)
 shared/engine.js               editor, stlite, run/hint/download/progress logic (ES module)
@@ -74,6 +74,13 @@ builds the three-pane workspace (steps | editor | app).
 - Don't use the deprecated `use_container_width`; elements stretch by default.
 - One concept per step; 5–6 steps per exercise; each step's solution builds on the
   last.
+- **Comments:** one short `#` comment (under 60 characters) above each section of
+  code, where a section is a paragraph separated by blank lines. Say what the
+  section does or why, in plain words; don't restate the syntax or comment single
+  lines. Once a comment appears, every later step keeps it. Apply this to starting
+  code, solutions and the code in hints, but not to the small syntax examples in
+  stories. The engine adds a standard "add a comment" line to every task box and a
+  matching check to every "What you should see" box.
 
 ## Engine notes (shared/engine.js)
 
@@ -110,7 +117,7 @@ Separate CDN imports of CodeMirror 6 load two copies of `@codemirror/language`,
 which breaks highlighting. So the editor comes from one prebuilt, minified bundle.
 To rebuild it (needs Node; output is committed):
 
-```
+```sh
 npm i codemirror@6.0.2 @codemirror/lang-python@6.2.1 @codemirror/view@6.43.15 \
       @codemirror/state@6.7.6 @codemirror/commands@6.11.1 @codemirror/language@6.13.1 esbuild
 npx esbuild shared/vendor/codemirror.entry.js --bundle --format=esm --minify \

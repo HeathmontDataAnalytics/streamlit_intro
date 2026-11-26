@@ -39,7 +39,7 @@
   </ul>
   <p>The data, <code>data/athletics.xlsx</code>, has one row for each competitor in each final: 288 rows. Each final has 8 runners or jumpers, 2 from each house (Banksia, Grevillea, Waratah and Wattle). 1st place earns 10 points, 2nd earns 8, down to 1 point for 8th. All names are made up.</p>
   <div class="note">
-    <p>This exercise assumes you've done exercise 1, or know how <code>pd.read_csv</code>, <code>st.dataframe</code> and filtering with <code>df[df["column"] == value]</code> work.</p>
+    <p>This exercise assumes you've done exercise 1, or know how <code>pd.read_csv</code>, <code>st.dataframe</code> and filtering with <code>df[df["column"] == value]</code> work. As in exercise 1, add a short <code>#</code> comment above each new section of code you write.</p>
   </div>
 </section>
 
@@ -56,7 +56,8 @@
     </ol>
   </div>
   <div class="hint">
-    <pre><code>df = pd.read_excel("data/athletics.xlsx")
+    <pre><code># Load the carnival results from the Excel file
+df = pd.read_excel("data/athletics.xlsx")
 st.write("Results recorded:", len(df))
 st.dataframe(df, hide_index=True)</code></pre>
   </div>
@@ -65,20 +66,25 @@ st.dataframe(df, hide_index=True)</code></pre>
     <p>The first row is Ivy A. from Banksia, who won the Year 7 100m in 14.52 seconds.</p>
   </div>
   <script type="text/x-python" class="start">
+# Libraries this app uses
 import streamlit as st
 import pandas as pd
 
+# The page title
 st.title("Athletics carnival results")
 
 # Read the Excel file into a DataFrame called df here
 
   </script>
   <script type="text/x-python" class="solution">
+# Libraries this app uses
 import streamlit as st
 import pandas as pd
 
+# The page title
 st.title("Athletics carnival results")
 
+# Load the carnival results from the Excel file
 df = pd.read_excel("data/athletics.xlsx")
 st.write("Results recorded:", len(df))
 st.dataframe(df, hide_index=True)
@@ -102,10 +108,12 @@ st.dataframe(df, hide_index=True)
     </ol>
   </div>
   <div class="hint">
-    <pre><code>st.subheader("Points by house")
+    <pre><code># Add up the points for each house
+st.subheader("Points by house")
 house_points = df.groupby("house")["points"].sum().reset_index()
 st.dataframe(house_points, hide_index=True)
 
+# Bar chart of total points, one bar per house
 fig = px.bar(house_points, x="house", y="points")
 st.plotly_chart(fig)</code></pre>
     <p>Check that you added the <code>import plotly.express as px</code> line, or Python won't know what <code>px</code> is.</p>
@@ -115,20 +123,25 @@ st.plotly_chart(fig)</code></pre>
     <p>Hover over a bar to see its exact value. Plotly charts also let you zoom: drag across the chart, then double-click to zoom back out.</p>
   </div>
   <script type="text/x-python" class="solution">
+# Libraries this app uses
 import streamlit as st
 import pandas as pd
 import plotly.express as px
 
+# The page title
 st.title("Athletics carnival results")
 
+# Load the carnival results from the Excel file
 df = pd.read_excel("data/athletics.xlsx")
 st.write("Results recorded:", len(df))
 st.dataframe(df, hide_index=True)
 
+# Add up the points for each house
 st.subheader("Points by house")
 house_points = df.groupby("house")["points"].sum().reset_index()
 st.dataframe(house_points, hide_index=True)
 
+# Bar chart of total points, one bar per house
 fig = px.bar(house_points, x="house", y="points")
 st.plotly_chart(fig)
   </script>
@@ -162,7 +175,8 @@ st.plotly_chart(fig)
   </div>
   <div class="hint">
     <p>Long function calls can be split over several lines. Put a comma after each argument:</p>
-    <pre><code>fig = px.bar(
+    <pre><code># Bar chart of total points, one bar per house
+fig = px.bar(
     house_points,
     x="house",
     y="points",
@@ -179,16 +193,20 @@ st.plotly_chart(fig)</code></pre>
     <p>The bars are now in order (Banksia, Grevillea, Waratah, Wattle), each in its house colour, with the points written on the bar. The chart has the title <strong>Total points by house</strong> and the axes say <strong>House</strong> and <strong>Points</strong>.</p>
   </div>
   <script type="text/x-python" class="solution">
+# Libraries this app uses
 import streamlit as st
 import pandas as pd
 import plotly.express as px
 
+# The page title
 st.title("Athletics carnival results")
 
+# Load the carnival results from the Excel file
 df = pd.read_excel("data/athletics.xlsx")
 st.write("Results recorded:", len(df))
 st.dataframe(df, hide_index=True)
 
+# Each house's colour, used by every chart
 house_colours = {
     "Banksia": "orange",
     "Grevillea": "royalblue",
@@ -196,10 +214,12 @@ house_colours = {
     "Wattle": "gold",
 }
 
+# Add up the points for each house
 st.subheader("Points by house")
 house_points = df.groupby("house")["points"].sum().reset_index().sort_values("points", ascending=False)
 st.dataframe(house_points, hide_index=True)
 
+# Bar chart of total points, one bar per house
 fig = px.bar(
     house_points,
     x="house",
@@ -230,7 +250,8 @@ st.plotly_chart(fig)
     </ol>
   </div>
   <div class="hint">
-    <pre><code>fig2 = px.bar(
+    <pre><code># Grouped bars: one bar per house in each year level
+fig2 = px.bar(
     year_points,
     x="year_level",
     y="points",
@@ -247,16 +268,20 @@ st.plotly_chart(fig2)</code></pre>
     <p>Without <code>barmode="group"</code>, the bars are <strong>stacked</strong> on top of each other, which shows each year level's total.</p>
   </div>
   <script type="text/x-python" class="solution">
+# Libraries this app uses
 import streamlit as st
 import pandas as pd
 import plotly.express as px
 
+# The page title
 st.title("Athletics carnival results")
 
+# Load the carnival results from the Excel file
 df = pd.read_excel("data/athletics.xlsx")
 st.write("Results recorded:", len(df))
 st.dataframe(df, hide_index=True)
 
+# Each house's colour, used by every chart
 house_colours = {
     "Banksia": "orange",
     "Grevillea": "royalblue",
@@ -264,10 +289,12 @@ house_colours = {
     "Wattle": "gold",
 }
 
+# Add up the points for each house
 st.subheader("Points by house")
 house_points = df.groupby("house")["points"].sum().reset_index().sort_values("points", ascending=False)
 st.dataframe(house_points, hide_index=True)
 
+# Bar chart of total points, one bar per house
 fig = px.bar(
     house_points,
     x="house",
@@ -280,9 +307,11 @@ fig = px.bar(
 )
 st.plotly_chart(fig)
 
+# Add up the points for each year level and house
 st.subheader("Points by year level")
 year_points = df.groupby(["year_level", "house"])["points"].sum().reset_index()
 
+# Grouped bars: one bar per house in each year level
 fig2 = px.bar(
     year_points,
     x="year_level",
@@ -312,8 +341,10 @@ st.plotly_chart(fig2)
     </ol>
   </div>
   <div class="hint">
-    <pre><code>sprint = df[df["event"] == "100m"]
+    <pre><code># Keep only the 100m results
+sprint = df[df["event"] == "100m"]
 
+# One dot per runner; hover to see their name
 fig3 = px.scatter(
     sprint,
     x="year_level",
@@ -332,16 +363,20 @@ st.plotly_chart(fig3)</code></pre>
     <p>In the box plot, each box covers the middle half of the times, with the median as a line across it.</p>
   </div>
   <script type="text/x-python" class="solution">
+# Libraries this app uses
 import streamlit as st
 import pandas as pd
 import plotly.express as px
 
+# The page title
 st.title("Athletics carnival results")
 
+# Load the carnival results from the Excel file
 df = pd.read_excel("data/athletics.xlsx")
 st.write("Results recorded:", len(df))
 st.dataframe(df, hide_index=True)
 
+# Each house's colour, used by every chart
 house_colours = {
     "Banksia": "orange",
     "Grevillea": "royalblue",
@@ -349,10 +384,12 @@ house_colours = {
     "Wattle": "gold",
 }
 
+# Add up the points for each house
 st.subheader("Points by house")
 house_points = df.groupby("house")["points"].sum().reset_index().sort_values("points", ascending=False)
 st.dataframe(house_points, hide_index=True)
 
+# Bar chart of total points, one bar per house
 fig = px.bar(
     house_points,
     x="house",
@@ -365,9 +402,11 @@ fig = px.bar(
 )
 st.plotly_chart(fig)
 
+# Add up the points for each year level and house
 st.subheader("Points by year level")
 year_points = df.groupby(["year_level", "house"])["points"].sum().reset_index()
 
+# Grouped bars: one bar per house in each year level
 fig2 = px.bar(
     year_points,
     x="year_level",
@@ -380,9 +419,11 @@ fig2 = px.bar(
 )
 st.plotly_chart(fig2)
 
+# Keep only the 100m results
 st.subheader("100m sprint")
 sprint = df[df["event"] == "100m"]
 
+# One dot per runner; hover to see their name
 fig3 = px.scatter(
     sprint,
     x="year_level",
@@ -395,6 +436,7 @@ fig3 = px.scatter(
 )
 st.plotly_chart(fig3)
 
+# Box plot: the spread of times in each year level
 fig4 = px.box(
     sprint,
     x="year_level",
@@ -426,7 +468,8 @@ with tab1:
   </div>
   <div class="hint">
     <p>Keep all the code that <em>makes</em> <code>fig</code>, <code>fig2</code>, <code>fig3</code> and <code>fig4</code>. Then, at the end:</p>
-    <pre><code>tab1, tab2, tab3, tab4 = st.tabs(["Houses", "Year levels", "100m", "Data"])
+    <pre><code># One tab for each chart, and one for the data
+tab1, tab2, tab3, tab4 = st.tabs(["Houses", "Year levels", "100m", "Data"])
 
 with tab1:
     st.plotly_chart(fig)
@@ -446,15 +489,19 @@ with tab4:
     <p>A row of four tabs under the title. Clicking each tab shows only its charts. The table is on the <em>Data</em> tab.</p>
   </div>
   <script type="text/x-python" class="solution">
+# Libraries this app uses
 import streamlit as st
 import pandas as pd
 import plotly.express as px
 
+# The page title
 st.title("Athletics carnival results")
 
+# Load the carnival results from the Excel file
 df = pd.read_excel("data/athletics.xlsx")
 st.write("Results recorded:", len(df))
 
+# Each house's colour, used by every chart
 house_colours = {
     "Banksia": "orange",
     "Grevillea": "royalblue",
@@ -462,6 +509,7 @@ house_colours = {
     "Wattle": "gold",
 }
 
+# Add up the points for each house
 house_points = df.groupby("house")["points"].sum().reset_index().sort_values("points", ascending=False)
 fig = px.bar(
     house_points,
@@ -474,6 +522,7 @@ fig = px.bar(
     text="points",
 )
 
+# Add up the points for each year level and house
 year_points = df.groupby(["year_level", "house"])["points"].sum().reset_index()
 fig2 = px.bar(
     year_points,
@@ -486,6 +535,7 @@ fig2 = px.bar(
     labels={"year_level": "Year level", "points": "Points", "house": "House"},
 )
 
+# Keep only the 100m results
 sprint = df[df["event"] == "100m"]
 fig3 = px.scatter(
     sprint,
@@ -505,6 +555,7 @@ fig4 = px.box(
     labels={"year_level": "Year level", "result": "Time (seconds)"},
 )
 
+# One tab for each chart, and one for the data
 tab1, tab2, tab3, tab4 = st.tabs(["Houses", "Year levels", "100m", "Data"])
 
 with tab1:

@@ -340,7 +340,7 @@ function renderView() {
   const commentTask = el("p", { class: "comment-note" }, "Add a short ", el("code", {}, "#"), " comment above each new section of code you write.");
   const commentCheck = el("p", { class: "comment-note" }, "Each new section of your code has a short comment above it saying what it does.");
   if (step.task) view.append(el("div", { class: "box box-task" }, el("h3", {}, "Your task"), ...clone(step.task).childNodes, commentTask));
-  if (step.hint) view.append(el("details", { class: "hint" }, el("summary", {}, "Show a hint"), ...clone(step.hint).childNodes));
+  if (step.hint) view.append(renderHint(step.hint));
   if (step.expect) view.append(el("div", { class: "box box-expect" }, el("h3", {}, "What you should see"), ...clone(step.expect).childNodes, commentCheck));
   view.append(
     el("div", { class: "step-actions" },
@@ -358,6 +358,27 @@ function renderView() {
     ),
   );
   return heading;
+}
+
+// A hint has two levels: a reminder of the functions and parameters needed
+// (.hint-recall), then, on request, code with blanks to fill in (.hint-blanks).
+// A hint without those parts is shown as a single level.
+function renderHint(hint) {
+  const recall = hint.querySelector(":scope > .hint-recall");
+  const blanks = hint.querySelector(":scope > .hint-blanks");
+  if (!recall && !blanks) {
+    return el("details", { class: "hint" }, el("summary", {}, "Show a hint"), ...clone(hint).childNodes);
+  }
+  const details = el("details", { class: "hint" }, el("summary", {}, "Show a hint"));
+  if (recall) details.append(...clone(recall).childNodes);
+  if (blanks) {
+    details.append(el("details", { class: "hint-more" },
+      el("summary", {}, "Still stuck? Show the code with blanks"),
+      el("p", {}, "Replace each ", el("code", {}, "____"), " with the right code, and put the lines in the right place in your app."),
+      ...clone(blanks).childNodes,
+    ));
+  }
+  return details;
 }
 
 function showView(v, focus = false) {
@@ -1006,6 +1027,12 @@ function explainError(message, fullTrace) {
     }
     case "NameError": {
       const name = (detail.match(/name '([^']+)' is not defined/) || [])[1] || "";
+      if (/^_{2,}$/.test(name)) {
+        return {
+          title: "There's still a blank to fill in",
+          html: "<p>Your code still has a <code>____</code> from the hint. Replace each one with the right code, then press Run again.</p>",
+        };
+      }
       const imports = { st: "import streamlit as st", pd: "import pandas as pd", px: "import plotly.express as px" };
       if (imports[name]) {
         return {

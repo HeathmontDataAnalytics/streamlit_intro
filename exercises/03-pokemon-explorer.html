@@ -58,11 +58,19 @@
     </ol>
   </div>
   <div class="hint">
-    <pre><code># Only show the full table if the box is ticked
-show_data = st.checkbox("Show all the data")
-if show_data:
+    <div class="hint-recall">
+      <p>Remember:</p>
+      <ul>
+        <li><code>st.checkbox("label")</code> gives back <code>True</code> or <code>False</code>, so store it in a variable.</li>
+        <li>An <code>if</code> line ends with a colon <code>:</code>, and the lines that belong to it are indented 4 spaces.</li>
+      </ul>
+    </div>
+    <div class="hint-blanks">
+      <pre><code># Only show the full table if the box is ticked
+show_data = st.____("Show all the data")
+if ____:
     st.dataframe(df, hide_index=True)</code></pre>
-    <p>Don't forget the colon <code>:</code> at the end of the <code>if</code> line, and indent the line under it by 4 spaces.</p>
+    </div>
   </div>
   <div class="expect">
     <p>The title, <strong>Pokémon in the data: 1072</strong>, and a checkbox. The table appears when you tick the box and disappears when you untick it.</p>
@@ -115,15 +123,24 @@ if show_data:
     </ol>
   </div>
   <div class="hint">
-    <pre><code># The options to choose from, in order
+    <div class="hint-recall">
+      <p>Remember:</p>
+      <ul>
+        <li><code>st.selectbox()</code> takes a label, then the list of options.</li>
+        <li>Filter as in exercise 1, but compare with the variable <code>chosen_type</code>. A variable has no quotes around it.</li>
+        <li><code>len()</code> counts rows.</li>
+      </ul>
+    </div>
+    <div class="hint-blanks">
+      <pre><code># The options to choose from, in order
 types = sorted(df["type1"].unique().tolist())
-chosen_type = st.selectbox("Choose a type", types)
+chosen_type = st.____("Choose a type", ____)
 
 # Apply the filters one at a time, keeping fewer rows
-filtered = df[df["type1"] == chosen_type]
-st.write("Pokémon of this type:", len(filtered))
+filtered = df[df["____"] == ____]
+st.write("Pokémon of this type:", len(____))
 st.dataframe(filtered, hide_index=True)</code></pre>
-    <p>Notice that <code>chosen_type</code> has no quotes around it. It's a variable holding whichever type was picked.</p>
+    </div>
   </div>
   <div class="expect">
     <p>A drop-down menu of types. Choose <strong>Fire</strong>: you should see <strong>Pokémon of this type: 67</strong>, and a table of only Fire Pokémon, starting with Charmander.</p>
@@ -174,8 +191,25 @@ filtered = filtered[filtered["total"] >= min_total]</code></pre>
     </ol>
   </div>
   <div class="hint">
-    <p><code>&gt;=</code> means "greater than or equal to". The second filter line uses <code>filtered</code> both inside and outside the brackets:</p>
-    <pre><code>filtered = filtered[filtered["total"] >= min_total]</code></pre>
+    <div class="hint-recall">
+      <p>Remember:</p>
+      <ul>
+        <li><code>st.slider()</code> takes a label, the smallest value, the largest value and the starting value, in that order.</li>
+        <li><code>&gt;=</code> means "greater than or equal to".</li>
+        <li>The second filter line starts from <code>filtered</code>, not <code>df</code>, so it keeps the type filter.</li>
+      </ul>
+    </div>
+    <div class="hint-blanks">
+      <pre><code># The options to choose from, in order
+types = sorted(df["type1"].unique().tolist())
+chosen_type = st.selectbox("Choose a type", types)
+min_total = st.slider("Minimum total stats", ____, ____, ____)
+
+# Apply the filters one at a time, keeping fewer rows
+filtered = df[df["type1"] == chosen_type]
+filtered = filtered[filtered["____"] &gt;= ____]
+st.write("____", len(filtered))</code></pre>
+    </div>
   </div>
   <div class="expect">
     <p>A slider starting at 300. With <strong>Fire</strong> chosen, <strong>65</strong> Pokémon match. Drag the slider to 500 and only <strong>29</strong> match.</p>
@@ -226,14 +260,25 @@ st.dataframe(filtered, hide_index=True)
     </ol>
   </div>
   <div class="hint">
-    <pre><code># Generations to choose from, and a legendary checkbox
-generations = sorted(df["generation"].unique().tolist())
-chosen_generations = st.multiselect("Generations", generations, default=generations)
-include_legendary = st.checkbox("Include legendary Pokémon", value=True)</code></pre>
-    <p>And with the other filter lines:</p>
-    <pre><code>filtered = filtered[filtered["generation"].isin(chosen_generations)]
-if not include_legendary:
-    filtered = filtered[filtered["legendary"] == False]</code></pre>
+    <div class="hint-recall">
+      <p>Remember:</p>
+      <ul>
+        <li>Make <code>generations</code> the same way you made <code>types</code>, using the <code>generation</code> column.</li>
+        <li><code>st.multiselect()</code> takes a label, the options and <code>default=</code>.</li>
+        <li>A checkbox starts ticked with <code>value=True</code>.</li>
+        <li><code>.isin()</code> checks whether each value is in a list. <code>if not ...:</code> runs its lines only when something is <code>False</code>.</li>
+      </ul>
+    </div>
+    <div class="hint-blanks">
+      <pre><code># Generations to choose from, and a legendary checkbox
+generations = sorted(df["____"].unique().tolist())
+chosen_generations = st.multiselect("Generations", generations, default=____)
+include_legendary = st.checkbox("Include legendary Pokémon", value=____)</code></pre>
+      <p>Then, with your other filter lines:</p>
+      <pre><code>filtered = filtered[filtered["generation"].____(chosen_generations)]
+if not ____:
+    filtered = filtered[filtered["legendary"] == ____]</code></pre>
+    </div>
   </div>
   <div class="expect">
     <p>A multiselect showing every generation as a tag. Removing a tag removes that generation from the table. With <strong>Fire</strong> and a minimum of 300, keeping only generation 1 leaves <strong>14</strong> Pokémon.</p>
@@ -295,21 +340,32 @@ st.dataframe(filtered, hide_index=True)
     </ol>
   </div>
   <div class="hint">
-    <pre><code># Let the user choose a stat for each axis
+    <div class="hint-recall">
+      <p>Remember:</p>
+      <ul>
+        <li>Plotly Express is imported with <code>import plotly.express as px</code>.</li>
+        <li><code>index=</code> sets which option a selectbox starts on. Python counts from 0.</li>
+        <li><code>px.scatter()</code> from exercise 2 takes the table, then <code>x=</code>, <code>y=</code>, <code>hover_name=</code>, <code>color=</code> and <code>title=</code>.</li>
+        <li>An f-string starts with <code>f</code> and puts variables inside <code>{ }</code>.</li>
+      </ul>
+    </div>
+    <div class="hint-blanks">
+      <pre><code># Let the user choose a stat for each axis
 stats = ["hp", "attack", "defense", "sp_attack", "sp_defense", "speed", "total"]
-x_stat = st.selectbox("X axis", stats, index=1)
-y_stat = st.selectbox("Y axis", stats, index=2)</code></pre>
-    <p>After the filtering:</p>
-    <pre><code># Scatter plot of the matching Pokémon
+x_stat = st.selectbox("X axis", stats, index=____)
+y_stat = st.selectbox("Y axis", ____, index=2)</code></pre>
+      <p>After the filtering:</p>
+      <pre><code># Scatter plot of the matching Pokémon
 fig = px.scatter(
     filtered,
-    x=x_stat,
-    y=y_stat,
-    hover_name="name",
+    x=____,
+    y=____,
+    hover_name="____",
     color="legendary",
-    title=f"{chosen_type} Pokémon: {y_stat} vs {x_stat}",
+    title=f"{chosen_type} Pokémon: {____} vs {____}",
 )
 st.plotly_chart(fig)</code></pre>
+    </div>
   </div>
   <div class="expect">
     <p>A scatter plot with one dot per Pokémon that matches your filters. Legendary Pokémon are a different colour. Hover over a dot to see its name.</p>
@@ -394,32 +450,43 @@ st.dataframe(filtered, hide_index=True)
     </ol>
   </div>
   <div class="hint">
-    <pre><code># Filters in the sidebar: each widget returns a choice
-with st.sidebar:
+    <div class="hint-recall">
+      <p>Remember:</p>
+      <ul>
+        <li>Lines under <code>with st.sidebar:</code> are indented 4 spaces.</li>
+        <li><code>st.warning()</code> shows a message and <code>st.stop()</code> ends the script there.</li>
+        <li><code>sort_values(..., ascending=False)</code> then <code>.iloc[0]</code> picks the top row.</li>
+        <li><code>st.columns(3)</code> gives back three columns. Put something in one with <code>col1.metric(...)</code>.</li>
+      </ul>
+    </div>
+    <div class="hint-blanks">
+      <pre><code># Filters in the sidebar: each widget returns a choice
+with st.____:
     st.header("Filters")
     chosen_type = st.selectbox("Choose a type", types)
     min_total = st.slider("Minimum total stats", 0, 1200, 300)
     chosen_generations = st.multiselect("Generations", generations, default=generations)
     include_legendary = st.checkbox("Include legendary Pokémon", value=True)</code></pre>
-    <p>The strongest Pokémon is the first row after sorting by <code>total</code>, highest first. <code>.iloc[0]</code> picks the first row:</p>
-    <pre><code># Stop here if nothing matches, so there's no empty chart
-if len(filtered) == 0:
+      <p>After the filtering:</p>
+      <pre><code># Stop here if nothing matches, so there's no empty chart
+if len(filtered) == ____:
     st.warning("No Pokémon match these filters. Try changing them.")
-    st.stop()
+    st.____()
 
 # The strongest match is the first after sorting by total
-strongest = filtered.sort_values("total", ascending=False).iloc[0]
+strongest = filtered.sort_values("____", ascending=False).iloc[____]
 
 # Headline numbers side by side
-col1, col2, col3 = st.columns(3)
+col1, col2, col3 = st.columns(____)
 col1.metric("Pokémon", len(filtered))
-col2.metric("Average total", round(filtered["total"].mean()))
-col3.metric("Strongest", strongest["name"])
+col2.metric("Average total", round(filtered["total"].____()))
+col3.metric("Strongest", strongest["____"])
 
 # Choose the chart's axes, side by side
 left, right = st.columns(2)
-x_stat = left.selectbox("X axis", stats, index=1)
-y_stat = right.selectbox("Y axis", stats, index=2)</code></pre>
+x_stat = ____.selectbox("X axis", stats, index=1)
+y_stat = ____.selectbox("Y axis", stats, index=2)</code></pre>
+    </div>
   </div>
   <div class="expect">
     <p>The filters are in a sidebar on the left. Across the top of the page are three metrics. With <strong>Fire</strong> and a minimum of 300: <strong>65</strong> Pokémon, an average total of <strong>464</strong>, and <strong>Ho-oh</strong> as the strongest.</p>

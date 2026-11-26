@@ -60,9 +60,14 @@
     </ol>
   </div>
   <div class="hint">
-    <p>Text in Python goes inside quotes. Only change the words inside the quotes:</p>
-    <pre><code># A big title, then a line of text
-st.title("Weather explorer")</code></pre>
+    <div class="hint-recall">
+      <p>Text in Python goes inside quotes. Only change the words inside the quotes: leave <code>st.title(</code> and the closing <code>)</code> as they are.</p>
+    </div>
+    <div class="hint-blanks">
+      <pre><code># A big title, then a line of text
+st.title("____")
+st.write("____")</code></pre>
+    </div>
   </div>
   <div class="expect">
     <p>A large heading <strong>Weather explorer</strong> with your sentence underneath.</p>
@@ -98,14 +103,25 @@ st.write("Explore a year of daily weather in four Australian cities.")
     </ol>
   </div>
   <div class="hint">
-    <p>Your code should end like this:</p>
-    <pre><code># Load the weather data from the CSV file
-df = pd.read_csv("data/weather.csv")
+    <div class="hint-recall">
+      <p>Remember:</p>
+      <ul>
+        <li>pandas is imported with the short name <code>pd</code>.</li>
+        <li><code>pd.read_csv()</code> takes the file's path in quotes, including the <code>data/</code> folder.</li>
+        <li><code>st.subheader()</code> and <code>st.dataframe()</code> each take the one thing to show.</li>
+      </ul>
+    </div>
+    <div class="hint-blanks">
+      <pre><code># Libraries this app uses
+import streamlit as st
+import ____ as pd</code></pre>
+      <pre><code># Load the weather data from the CSV file
+df = pd.____("data/weather.csv")
 
 # Show the whole table
-st.subheader("The data")
-st.dataframe(df)</code></pre>
-    <p>The file path is in quotes, and the folder name <code>data/</code> is part of it.</p>
+st.subheader("____")
+st.____(df)</code></pre>
+    </div>
   </div>
   <div class="expect">
     <p>An interactive table under the subheader <strong>The data</strong>, with the columns <code>date</code>, <code>city</code>, <code>month</code>, <code>max_temp</code>, <code>min_temp</code>, <code>rain_mm</code> and <code>sunshine_hours</code>.</p>
@@ -148,12 +164,25 @@ st.dataframe(df)
     </ol>
   </div>
   <div class="hint">
-    <p><code>st.write</code> can take several things separated by commas and shows them side by side.</p>
-    <pre><code># How big is the table, and what are its columns?
-rows, columns = df.shape
-st.write("Rows:", rows)
-st.write("Columns:", columns)</code></pre>
-    <p>For the summary: <code>st.dataframe(df.describe())</code></p>
+    <div class="hint-recall">
+      <p>Remember:</p>
+      <ul>
+        <li><code>df.shape</code> holds two numbers, rows then columns, so it can fill two variables at once.</li>
+        <li><code>st.write()</code> can take a label and a value, separated by a comma.</li>
+        <li><code>df.describe()</code> makes a new table that you can pass to <code>st.dataframe()</code>.</li>
+      </ul>
+    </div>
+    <div class="hint-blanks">
+      <pre><code># How big is the table, and what are its columns?
+rows, columns = df.____
+st.write("Rows:", ____)
+st.write("Columns:", ____)
+st.write("Column names:", df.columns.____())
+
+# Summary statistics for each number column
+st.subheader("Summary statistics")
+st.dataframe(df.____())</code></pre>
+    </div>
   </div>
   <div class="expect">
     <p><strong>Rows: 1460</strong> and <strong>Columns: 7</strong>, then the 7 column names, then a summary table with rows such as <code>count</code>, <code>mean</code>, <code>min</code> and <code>max</code> for <code>max_temp</code>, <code>min_temp</code>, <code>rain_mm</code> and <code>sunshine_hours</code>.</p>
@@ -200,12 +229,21 @@ st.dataframe(df.describe())
     </ol>
   </div>
   <div class="hint">
-    <pre><code># The 10 hottest days: sort highest first, keep 10
-hottest = df.sort_values("max_temp", ascending=False).head(10)
-
+    <div class="hint-recall">
+      <p>Remember:</p>
+      <ul>
+        <li><code>sort_values()</code> takes the column name in quotes. <code>ascending=False</code> puts the biggest first.</li>
+        <li><code>.head(10)</code> keeps the first 10 rows.</li>
+        <li><code>hide_index=True</code> goes inside <code>st.dataframe(...)</code>, after a comma.</li>
+      </ul>
+      <p>For the challenge, do the same again with the <code>rain_mm</code> column.</p>
+    </div>
+    <div class="hint-blanks">
+      <pre><code># The 10 hottest days: sort highest first, keep 10
+hottest = df.sort_values("____", ascending=____).head(____)
 st.subheader("The 10 hottest days")
-st.dataframe(hottest, hide_index=True)</code></pre>
-    <p>For the challenge, copy those three lines and change <code>hottest</code>, <code>"max_temp"</code> and the subheader.</p>
+st.dataframe(hottest, ____=True)</code></pre>
+    </div>
   </div>
   <div class="expect">
     <p>A table of 10 rows, sorted so the hottest day is at the top. Most of the hottest days are in Perth and Brisbane in summer.</p>
@@ -267,13 +305,22 @@ st.dataframe(wettest, hide_index=True)
     </ol>
   </div>
   <div class="hint">
-    <pre><code># Keep only Melbourne's rows and summarise them
-melbourne = df[df["city"] == "Melbourne"]
-
+    <div class="hint-recall">
+      <p>Remember:</p>
+      <ul>
+        <li>A filter names the table twice: <code>df[df["column"] == value]</code>. Use <code>==</code> to compare.</li>
+        <li>City names start with a capital letter, exactly as in the data.</li>
+        <li>A column has <code>.mean()</code> and <code>.sum()</code>. <code>round(number, 1)</code> rounds to 1 decimal place.</li>
+        <li><code>st.metric()</code> takes a label, then a value.</li>
+      </ul>
+    </div>
+    <div class="hint-blanks">
+      <pre><code># Keep only Melbourne's rows and summarise them
+melbourne = df[df["____"] == "____"]
 st.subheader("Melbourne")
-st.metric("Average max temp (°C)", round(melbourne["max_temp"].mean(), 1))
-st.metric("Total rain (mm)", round(melbourne["rain_mm"].sum(), 1))</code></pre>
-    <p>City names start with a capital letter, exactly as in the data: <code>"Melbourne"</code>, not <code>"melbourne"</code>.</p>
+st.metric("Average max temp (°C)", round(melbourne["max_temp"].____(), 1))
+st.metric("Total rain (mm)", round(melbourne["____"].____(), 1))</code></pre>
+    </div>
   </div>
   <div class="expect">
     <p>Two big numbers under <strong>Melbourne</strong>: an average maximum temperature of about <strong>19.4</strong> °C and a total rainfall of about <strong>605</strong> mm.</p>
@@ -341,14 +388,24 @@ st.metric("Total rain (mm)", round(melbourne["rain_mm"].sum(), 1))
     </ol>
   </div>
   <div class="hint">
-    <pre><code># Average each column for every city at once
+    <div class="hint-recall">
+      <p>Remember:</p>
+      <ul>
+        <li>The task gives you the whole <code>averages</code> line. Show it with <code>st.dataframe()</code>.</li>
+        <li>For the totals, group by <code>"city"</code>, pick just the <code>rain_mm</code> column, then add it up with <code>.sum()</code>.</li>
+        <li><code>.idxmax()</code> gives the label (here, the city) with the biggest value.</li>
+      </ul>
+    </div>
+    <div class="hint-blanks">
+      <pre><code># Average each column for every city at once
 st.subheader("All four cities")
 averages = df.groupby("city")[["max_temp", "min_temp", "rain_mm", "sunshine_hours"]].mean().round(1)
-st.dataframe(averages)
+st.dataframe(____)
 
 # Total rain for each city, then the wettest one
-total_rain = df.groupby("city")["rain_mm"].sum()
-st.write("The wettest city was", total_rain.idxmax())</code></pre>
+total_rain = df.groupby("____")["____"].sum()
+st.write("The wettest city was", total_rain.____())</code></pre>
+    </div>
   </div>
   <div class="expect">
     <p>A table with one row for each city (Brisbane, Melbourne, Perth, Sydney) and the average of each column. Brisbane has the highest average maximum temperature.</p>
